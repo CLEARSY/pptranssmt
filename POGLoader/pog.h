@@ -23,8 +23,8 @@
 #include <string>
 #include <QDomDocument>
 
-#include "pred.h"
-#include "gpred.h"
+#include "../BAST/src/pred.h"
+#include "../BAST/src/gpred.h"
 
 namespace pog {
 

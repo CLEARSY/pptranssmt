@@ -1,7 +1,8 @@
-# ppTransSmt
+# ppTransSmt / ppTransTPTP
 
 Tool translating proof obligations from the POG format
 to SMT-LIB 2.6 based on the pptrans approach.
+or to TPTP format based on the pptrans approach.
 
 * BAST: a C++ library to represent B Abstract Syntax Trees. Depends on Qt5Core, Qt5Xml.
 
@@ -10,6 +11,9 @@ to SMT-LIB 2.6 based on the pptrans approach.
 
 * PPTRANSSMT: a C++ program to translate POG files to SMTLIB-2.6
   format, based on an extension of the pptrans encoding described in the paper [Integrating SMT solvers in Rodin](http://dx.doi.org/10.3233/SAT190123).
+
+* PPTRANSSMT: a C++ program to translate POG files to TPTP (tff)
+  format, in a similar way to the SMTLIB-2.6 translation.
 
 ## COMPILING
 
@@ -22,10 +26,33 @@ cmake .
 make
 ```
 
+To update the repository and its submodules, use the following command:
+
+```bash
+git submodule update --init --recursive
+```
+
+## USAGE
+
+### Using ppTransTPTP
+
+```bash
+  ./ppTransTPTP -i <input.pog> -o <output-tptp-folder>
+```
+
+### Scripts
+
+Alternatively, you can use one of the following scripts in the `Scripts` folder:
+
+* `translate.sh` : wrapper around `pptranstptp` that takes as input a POG file and outputs a TPTP file.  
+
+* `comparison.sh` takes as input a folder of POG files and uses both `pptranstptp` and `pptranssmt` to generate TPTP and SMTLIB files respectively. It then uses the `vampire` and `z3` solvers to check the validity of the generated files. The results are saved in a CSV file. The script requires the `vampire` and `z3` solvers to be installed and available in the `PATH` environment variable.
+
+Both scripts will compile the code (using cmake and make) if needed.
+
 ## COPYING
 
 
-This software is copyright (C) CLEARSY 2022. All rights reserved.
+This software is copyright (C) CLEARSY 2023. All rights reserved.
 
 The source code is distributed under the terms of the GNU General Public Licence (GNU GPL) Version 3.
-

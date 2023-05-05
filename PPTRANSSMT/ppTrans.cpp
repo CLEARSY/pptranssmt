@@ -18,9 +18,9 @@
 */
 #include "ppTrans.h"
 #include "decomposition.h"
-#include "predDesc.h"
-#include "exprDesc.h"
-#include "exprWriter.h"
+#include "../BAST/src/predDesc.h"
+#include "../BAST/src/exprDesc.h"
+#include "../BAST/src/exprWriter.h"
 #include <fstream>
 #include <iostream>
 #include <ostream>

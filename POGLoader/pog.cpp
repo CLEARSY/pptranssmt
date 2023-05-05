@@ -18,14 +18,14 @@
 */
 #include <iostream>
 #include <QFile>
-#include "exprDesc.h"
-#include "predDesc.h"
-#include "exprReader.h"
-#include "predReader.h"
-#include "exprWriter.h"
-#include "predWriter.h"
-#include "gpredReader.h"
-#include "substReader.h"
+#include "../BAST/src/exprDesc.h"
+#include "../BAST/src/predDesc.h"
+#include "../BAST/src/exprReader.h"
+#include "../BAST/src/predReader.h"
+#include "../BAST/src/exprWriter.h"
+#include "../BAST/src/predWriter.h"
+#include "../BAST/src/gpredReader.h"
+#include "../BAST/src/substReader.h"
 #include "pog.h"
 
 bool isConj(const Pred &p){

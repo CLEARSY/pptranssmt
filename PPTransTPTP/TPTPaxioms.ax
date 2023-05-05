@@ -1,0 +1,188 @@
+tff(set_0_type,type,(
+    set_0: $tType )).
+
+tff(mem0_type,type,(
+    mem0: ( $int * set_0 ) > $o )).
+
+tff(set_1_type,type,(
+    set_1: $tType )).
+
+tff(mem1_type,type,(
+    mem1: ( $real * set_1 ) > $o )).
+
+tff(b_division_type,type,(
+    divB: ( $int * $int ) > $int )).
+
+tff(b_division_def_1,axiom,(
+    ! [X: $int,Y: $int] : 
+      ( ( $lesseq(0,X)
+        & $less(0,Y) )
+     => divB(X,Y) = $quotient_f(X,Y) ) )).
+
+tff(b_division_def_2,axiom,(
+    ! [X: $int,Y: $int] : 
+      ( ( $lesseq(X,0)
+        & $less(0,Y) )
+     => divB(X,Y) = $uminus($quotient_f($uminus(X),Y)) ) )).
+
+tff(b_division_def_3,axiom,(
+    ! [X: $int,Y: $int] : 
+      ( ( $lesseq(0,X)
+        & $less(Y,0) )
+     => divB(X,Y) = $quotient_f(X,Y) ) )).
+
+tff(b_division_def_3,axiom,(
+    ! [X: $int,Y: $int] : 
+      ( ( $lesseq(X,0)
+        & $less(Y,0) )
+     => divB(X,Y) = $quotient_f($uminus(X),$uminus(Y)) ) )).
+
+tff(exp_type,type,(
+    exp: ( $int * $int ) > $int )).
+
+tff(exp_def_1,axiom,(
+    ! [X: $int] : 
+      ( X != 0
+     => exp(X,0) = 1 ) )).
+
+tff(exp_def_2,axiom,(
+    ! [X: $int,Y: $int] : 
+      ( $greatereq(Y,1)
+     => exp(X,Y) = $sum(X,exp(X,$difference(Y,1))) ) )).
+
+tff(rexp_type,type,(
+    rexp: ( $real * $int ) > $real )).
+
+tff(rexp_def_1,axiom,(
+    ! [X: $real] : 
+      ( X != 0.0
+     => rexp(X,0) = 1.0 ) )).
+
+tff(rexp_def_2,axiom,(
+    ! [X: $real,Y: $int] : 
+      ( $greatereq(Y,1)
+     => rexp(X,Y) = $sum(X,rexp(X,$difference(Y,1))) ) )).
+
+tff(isum_type,type,(
+    isum: set_0 > $int )).
+
+tff(isum_def_1,axiom,(
+    ! [S: set_0,X: $int] : 
+      ( ~ mem0(X,S)
+     => isum(S) = 0 ) )).
+
+tff(isum_def_2,axiom,(
+    ! [S1: set_0,S2: set_0,E: $int,N: $int] : 
+      ( ( isum(S1) = N
+        & ~ mem0(E,S1)
+        & ! [X: $int] : 
+            ( mem0(X,S2)
+           => ( X = E
+              | mem0(X,S1) ) )
+        & ! [X: $int] : 
+            ( mem0(X,S1)
+           => ( X = E
+              | mem0(X,S1) ) ) )
+     => isum(S2) = $sum(N,E) ) )).
+
+tff(rsum_type,type,(
+    rsum: set_1 > $real )).
+
+tff(rsum_def_1,axiom,(
+    ! [S: set_1,X: $real] : 
+      ( ~ mem1(X,S)
+     => rsum(S) = 0.0 ) )).
+
+tff(rsum_def_2,axiom,(
+    ! [S1: set_1,S2: set_1,E: $real,N: $real] : 
+      ( ( rsum(S1) = N
+        & ~ mem1(E,S1)
+        & ! [X: $real] : 
+            ( mem1(X,S2)
+           => ( X = E
+              | mem1(X,S1) ) )
+        & ! [X: $real] : 
+            ( ( X = E
+              | mem1(X,S1) )
+           => mem1(X,S2) ) )
+     => rsum(S2) = $sum(N,E) ) )).
+
+tff(isum_type,type,(
+    isum: set_0 > $int )).
+
+tff(isum_def_1,axiom,(
+    ! [S: set_0,X: $int] : 
+      ( ~ mem0(X,S)
+     => isum(S) = 1 ) )).
+
+tff(isum_def_2,axiom,(
+    ! [S1: set_0,S2: set_0,E: $int,N: $int] : 
+      ( ( isum(S1) = N
+        & ~ mem0(E,S1)
+        & ! [X: $int] : 
+            ( mem0(X,S2)
+           => ( X = E
+              | mem0(X,S1) ) )
+        & ! [X: $int] : 
+            ( ( X = E
+              | mem0(X,S1) )
+           => mem0(X,S2) ) )
+     => isum(S2) = $sum(N,E) ) )).
+
+tff(rsum_type,type,(
+    rsum: set_1 > $real )).
+
+tff(rsum_def_1,axiom,(
+    ! [S: set_1,X: $real] : 
+      ( ~ mem1(X,S)
+     => rsum(S) = 1.0 ) )).
+
+tff(rsum_def_2,axiom,(
+    ! [S1: set_1,S2: set_1,E: $real,N: $real] : 
+      ( ( rsum(S1) = N
+        & ~ mem1(E,S1)
+        & ! [X: $real] : 
+            ( mem1(X,S2)
+           => ( X = E
+              | mem1(X,S1) ) )
+        & ! [X: $real] : 
+            ( ( X = E
+              | mem1(X,S1) )
+           => mem1(X,S2) ) )
+     => rsum(S2) = $sum(N,E) ) )).
+
+tff(max_type,type,(
+    max: ( $int * $int ) > $int )).
+
+tff(max_def,axiom,(
+    ! [X: $int,Y: $int] : max(X,Y) = $ite($greatereq(X,Y),X,Y) )).
+
+tff(max_real_type,type,(
+    max_real: ( $real * $real ) > $real )).
+
+tff(max_real_def,axiom,(
+    ! [X: $real,Y: $real] : max_real(X,Y) = $ite($greatereq(X,Y),X,Y) )).
+
+tff(min_type,type,(
+    min: ( $int * $int ) > $int )).
+
+tff(min_def,axiom,(
+    ! [X: $int,Y: $int] : min(X,Y) = $ite($greatereq(X,Y),Y,X) )).
+
+tff(min_real_type,type,(
+    min_real: ( $real * $real ) > $real )).
+
+tff(min_real_def,axiom,(
+    ! [X: $real,Y: $real] : min_real(X,Y) = $ite($greatereq(X,Y),Y,X) )).
+
+tff(min_int_type,type,(
+    min_int: $int )).
+
+tff(min_int_axiom,axiom,(
+    min_int = $uminus(2147483648) )).
+
+tff(max_int_type,type,(
+    max_int: $int )).
+
+tff(max_int_axiom,axiom,(
+    max_int = 2147483647 )).
