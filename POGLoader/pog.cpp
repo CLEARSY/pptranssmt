@@ -17,130 +17,67 @@
     along with POGLoader. If not, see <https://www.gnu.org/licenses/>.
 */
 #include <iostream>
-#include <QFile>
-#include "../BAST/src/exprDesc.h"
-#include "../BAST/src/predDesc.h"
-#include "../BAST/src/exprReader.h"
-#include "../BAST/src/predReader.h"
-#include "../BAST/src/exprWriter.h"
-#include "../BAST/src/predWriter.h"
-#include "../BAST/src/gpredReader.h"
-#include "../BAST/src/substReader.h"
+
+#include "tinyxml2.h"
+
+#include "btypeReader.h"
+#include "exprDesc.h"
+#include "predDesc.h"
+#include "exprReader.h"
+#include "predReader.h"
+#include "exprWriter.h"
+#include "predWriter.h"
+#include "gpredReader.h"
+#include "substReader.h"
+
 #include "pog.h"
+
 
 bool isConj(const Pred &p){
     return (p.getTag() == Pred::PKind::Conjunction);
 }
 
-BType readType(const QDomElement &dom){
-    if(dom.isNull())
-        throw pog::PogException("Null dom element.");
-
-    QString tag = dom.tagName();
-    if(tag == "Id"){
-        QString value = dom.attribute("value");
-        if(value == "INTEGER"){
-            return BType::INT;
-        } else if(value == "FLOAT"){
-            return BType::FLOAT;
-        } else if(value == "REAL"){
-            return BType::REAL;
-        } else if(value == "STRING"){
-            return BType::STRING;
-        } else if(value == "BOOL"){
-            return BType::BOOL;
-        } else {
-            if(dom.hasAttribute("suffix"))
-                throw pog::PogException("Abstract or Concrete Set with suffix."); // this constraint could be removed
-            return BType::INT;
-        }
-    } else if(tag == "Unary_Exp"){
-        assert(dom.attribute("op") == "POW");
-        return BType::POW(readType(dom.firstChildElement()));
-    } else if(tag == "Binary_Exp"){
-        assert(dom.attribute("op") == "*");
-        QDomElement fst = dom.firstChildElement();
-        return BType::PROD(
-                readType(fst),
-                readType(fst.nextSiblingElement()));
-    } else if(tag == "Struct"){
-        std::vector<std::pair<std::string,BType>> fields;
-        for(QDomElement item = dom.firstChildElement("Record_Item");
-                !item.isNull();
-                item = item.nextSiblingElement("Record_Item"))
-        {
-            fields.push_back( {
-                    item.attribute("label").toStdString(),
-                    readType(item.firstChildElement()) });
-        }
-        return BType::STRUCT(fields);
-    } else {
-        throw pog::PogException("Unexpected Tag");
-    }
-    assert(false); // unreachable
-}
-
-void readTypeInfos(const QDomElement &dom,std::vector<BType> &typeInfos){
-    assert(typeInfos.size() == 0);
-    if(!dom.isNull()){
-        int cpt=0;
-        for(QDomElement typ = dom.firstChildElement("Type");
-                !typ.isNull();
-                typ = typ.nextSiblingElement())
-        {
-            bool ok = false;
-            int typref = typ.attribute("id").toInt(&ok);
-            if(!ok)
-                throw pog::PogException("Integer expected");
-            if(typref != cpt)
-                throw pog::PogException("Unexpected typref. Expecting '" + std::to_string(cpt)
-                        + "'. Found '"+ std::to_string(typref) + "'.");
-            typeInfos.push_back(readType(typ.firstChildElement()));
-            cpt++;
-        }
-    }
-}
-
-pog::Set readSet(const std::vector<BType> &typeInfos, const QDomElement &dom){
+pog::Set readSet(const std::vector<BType> &typeInfos, const tinyxml2::XMLElement *dom){
     std::vector<TypedVar> vec;
-    QDomElement elt = dom.firstChildElement("Enumerated_Values").firstChildElement("Id");
-    while(!elt.isNull()){
+    const tinyxml2::XMLElement *elt {dom->FirstChildElement("Enumerated_Values")->FirstChildElement("Id")};
+    while(nullptr != elt){
         vec.push_back(Xml::VarNameFromId(elt,typeInfos));
-        elt = elt.nextSiblingElement("Id");
+        elt = elt->NextSiblingElement("Id");
     }
-    QDomElement id = dom.firstChildElement("Id");
-    if(id.isNull())
+    const tinyxml2::XMLElement *id {dom->FirstChildElement("Id")};
+    if(nullptr == id)
         throw pog::PogException ("Missing 'Id' element.");
     return pog::Set(Xml::VarNameFromId(id,typeInfos), vec);
 }
 
-pog::Pog pog::read(const QDomDocument &pog){
+pog::Pog pog::read(const tinyxml2::XMLDocument *pog){
     Pog res;
-    QDomElement root = pog.firstChildElement("Proof_Obligations");
-    if(root.isNull())
+    const tinyxml2::XMLElement *root {pog->FirstChildElement("Proof_Obligations")};
+    if(nullptr == root)
         throw PogException("Proof_Obligations element expected.");
     // TypeInfos
     std::vector<BType> typeInfos;
-    readTypeInfos(root.firstChildElement("TypeInfos"),typeInfos);
+    Xml::readTypeInfos(root->FirstChildElement("TypeInfos"),typeInfos);
     // Defines
-    for(QDomElement e = root.firstChildElement("Define");
-            !e.isNull();
-            e = e.nextSiblingElement("Define"))
+    for(const tinyxml2::XMLElement *e = root->FirstChildElement("Define");
+            nullptr != e;
+            e = e->NextSiblingElement("Define"))
     {
-        if(!e.hasAttribute("name"))
+        if(nullptr == e->Attribute("name"))
             throw PogException("Attribute name expected.");
 
-        size_t hash;
-        if(!e.hasAttribute("hash"))
+        uint64_t hash;
+        if(nullptr == e->Attribute("hash"))
             throw PogException("Missing hash attribute.");
-        sscanf(e.attribute("hash").toStdString().c_str(), "%zu", &hash);
+        if(tinyxml2::XML_SUCCESS != e->QueryUnsigned64Attribute("hash", &hash))
+            throw PogException("Cannot recover hash attribute value.");
 
-        auto def = Define(e.attribute("name").toStdString(),hash);
-        for(QDomElement ch = e.firstChildElement();
-                !ch.isNull();
-                ch = ch.nextSiblingElement())
+        auto def = Define(e->Attribute("name"), hash);
+        for(const tinyxml2::XMLElement *ch {e->FirstChildElement()};
+                nullptr != ch;
+                ch = ch->NextSiblingElement())
         {
-            if(ch.tagName() == "Set"){
+            if(0 == strcmp(ch->Name(), "Set")) {
                 Set s = readSet(typeInfos,ch);
                 def.gsets.push_back(s);
             } else {
@@ -152,68 +89,69 @@ pog::Pog pog::read(const QDomDocument &pog){
         res.defines.push_back(std::move(def));
     }
     // Proof_Obligation
-    for(QDomElement po = root.firstChildElement("Proof_Obligation");
-            !po.isNull();
-            po = po.nextSiblingElement("Proof_Obligation"))
+    for(const tinyxml2::XMLElement *po {root->FirstChildElement("Proof_Obligation")};
+            nullptr != po;
+            po = po->NextSiblingElement("Proof_Obligation"))
     {
         // goalHash
-        size_t goalHash;
-        if(!po.hasAttribute("goalHash"))
+        uint64_t goalHash;
+        if(nullptr == po->Attribute("goalHash"))
             throw PogException("Missing goalHash attribute.");
-        sscanf(po.attribute("goalHash").toStdString().c_str(), "%zu", &goalHash);
+        if(tinyxml2::XML_SUCCESS != po->QueryUnsigned64Attribute("hash", &goalHash))
+            throw PogException("Cannot recover hash attribute value.");
         // Tag
-        QDomElement e = po.firstChildElement("Tag");
-        if(e.isNull())
+        const tinyxml2::XMLElement *e {po->FirstChildElement("Tag")};
+        if(nullptr == e)
             throw PogException("Tag element expected.");
-        std::string tag = e.text().toStdString();
+        std::string tag {e->GetText()};
         // Definitions
         std::vector<std::string> definitions;
-        for(QDomElement e = po.firstChildElement("Definition");
-                !e.isNull();
-                e = e.nextSiblingElement("Definition"))
+        for(const tinyxml2::XMLElement *e {po->FirstChildElement("Definition")};
+                nullptr != e;
+                e = e->NextSiblingElement("Definition"))
         {
-            definitions.push_back(e.attribute("name").toStdString());
+            definitions.push_back(e->Attribute("Name"));
         }
         // Hypothesis
         std::vector<Pred> hyps;
-        for(QDomElement e = po.firstChildElement("Hypothesis");
-                !e.isNull();
-                e = e.nextSiblingElement("Hypothesis"))
+        for(const tinyxml2::XMLElement *e {po->FirstChildElement("Hypothesis")};
+                nullptr != e;
+                e = e->NextSiblingElement("Hypothesis"))
         {
-            Pred p = Xml::readPredicate(e.firstChildElement(),typeInfos);
+            Pred p = Xml::readPredicate(e->FirstChildElement(),typeInfos);
             assert(!isConj(p));
             hyps.push_back(std::move(p));
         }
         // Local Hypotheses
         std::vector<Pred> localHyps;
-        for(QDomElement e = po.firstChildElement("Local_Hyp");
-                !e.isNull();
-                e = e.nextSiblingElement("Local_Hyp"))
+        for(const tinyxml2::XMLElement *e {po->FirstChildElement("Local_Hyp")};
+                nullptr != e;
+                e = e->NextSiblingElement("Local_Hyp"))
         {
-            Pred p = Xml::readPredicate(e.firstChildElement(),typeInfos);
+            Pred p = Xml::readPredicate(e->FirstChildElement(),typeInfos);
             assert(!isConj(p));
             localHyps.push_back(std::move(p));
         }
         // Simple Goal
         std::vector<PO> simpleGoals;
-        for(QDomElement e = po.firstChildElement("Simple_Goal");
-                !e.isNull();
-                e = e.nextSiblingElement("Simple_Goal"))
+        for(const tinyxml2::XMLElement *e {po->FirstChildElement("Simple_Goal")};
+                nullptr != e;
+                e = e->NextSiblingElement("Simple_Goal"))
         {
             // Tag
-            QDomElement tag = e.firstChildElement("Tag");
-            std::string _tag = tag.text().toStdString();
+            const tinyxml2::XMLElement *tag = e->FirstChildElement("Tag");
+            std::string _tag = tag->GetText();
             // Ref Hyps
             std::vector<int> _localHypRefs;
-            for(QDomElement ch = e.firstChildElement("Ref_Hyp");
-                    !ch.isNull();
-                    ch = ch.nextSiblingElement("Ref_Hyp"))
+            for(const tinyxml2::XMLElement *ch = e->FirstChildElement("Ref_Hyp");
+                    nullptr != ch;
+                    ch = ch->NextSiblingElement("Ref_Hyp"))
             {
-                _localHypRefs.push_back(ch.attribute("num").toInt());
+                _localHypRefs.push_back(ch->IntAttribute("num"));
             }
             // Goal
-            QDomElement goal = e.firstChildElement("Goal");
-            Pred _goal = Xml::readPredicate(goal.firstChildElement(),typeInfos);
+            const tinyxml2::XMLElement *goal {e->FirstChildElement("Goal")};
+            Pred _goal = Xml::readPredicate(goal->FirstChildElement(),typeInfos);
             simpleGoals.push_back({_tag,_localHypRefs,std::move(_goal)});
         }
         res.pos.push_back(POGroup(tag,goalHash,definitions,std::move(hyps),std::move(localHyps),std::move(simpleGoals)));

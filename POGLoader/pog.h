@@ -21,10 +21,10 @@
 
 #include <vector>
 #include <string>
-#include <QDomDocument>
 
-#include "../BAST/src/pred.h"
-#include "../BAST/src/gpred.h"
+#include "tinyxml2.h"
+#include "pred.h"
+#include "gpred.h"
 
 namespace pog {
 
@@ -69,8 +69,12 @@ namespace pog {
                     std::vector<Pred> &&hyps,
                     std::vector<Pred> &&localHyps,
                     std::vector<PO> &&simpleGoals):
-                tag{tag},definitions{definitions},hyps{std::move(hyps)},
-                localHyps{std::move(localHyps)},simpleGoals{std::move(simpleGoals)},goalHash{goalHash} {};
+                tag{tag},
+                goalHash{goalHash},
+                definitions{definitions},
+                hyps{std::move(hyps)},
+                localHyps{std::move(localHyps)},
+                simpleGoals{std::move(simpleGoals)} {};
     };
 
     class Set {
@@ -105,7 +109,7 @@ namespace pog {
     };
 
   struct Options {
-        QStringList ressources;
+        std::vector<std::string> ressources;
         bool generateWDPOs = false;
         bool overflow = false;
         bool obvious = false;
@@ -113,7 +117,7 @@ namespace pog {
         int limit = 10000;
     };
 
-    Pog read(const QDomDocument &pog);
+    Pog read(const tinyxml2::XMLDocument *pog);
 }
 
 #endif // POG_H
