@@ -1,7 +1,7 @@
 /** decomposition.cpp
 
-   \copyright Copyright © CLEARSY 2022
-   \license This file is part of ppTransSmt
+   \copyright Copyright © CLEARSY 2023
+   \license This file is part of ppTransTPTP
 
    ppTransSmt is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 */
 #include <map>
 #include "decomposition.h"
-#include "../BAST/src/exprDesc.h"
-#include "../BAST/src/predDesc.h"
+#include "exprDesc.h"
+#include "predDesc.h"
 
 inline bool isProduct(const BType &ty){
     return (ty.getKind() == BType::Kind::ProductType); 

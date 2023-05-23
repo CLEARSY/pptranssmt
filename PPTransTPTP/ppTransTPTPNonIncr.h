@@ -23,7 +23,8 @@
 #include<set>
 #include<string>
 #include<vector>
-#include "../POGLoader/pog.h"
+
+#include "pog.h"
 
 namespace ppTransNonIncr {
 using std::map;

@@ -16,9 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with ppTransSmt. If not, see <https://www.gnu.org/licenses/>.
 */
-#include<QDir>
-#include<QFileInfo>
-#include<QString>
+
+#include<filesystem>
+#include<string>
 
 #include "utils.h"
 
@@ -32,16 +32,15 @@ string absoluteBasename(const string& filename) {
     // The result is stored in variable `prefix`.
     // Note: The path class provided in C++17 contains all the functionalities to implement the following lines.
     // get the path up but the file extension
-    QFileInfo qi { QString::fromStdString(filename) };
-    QString base { qi.baseName() }; // all characters in the file up to (but not including) the first '.'.
-    if(base == "") base = "out";
-    string prefix { QString("%1%2%3").arg(qi.absolutePath()).arg(QDir::separator()).arg(base).toStdString() };
-    return prefix;
+    const std::filesystem::path thePath {filename};
+    const std::filesystem::path result {thePath.parent_path() / thePath.stem()};
+    return result.string();
 }
 
 string absoluteFilePath(const string& filename) {
-    QFileInfo qi { QString::fromStdString(filename) };
-    return qi.absoluteFilePath().toStdString();
+    const std::filesystem::path thePath {filename};
+    const std::filesystem::path result {thePath.parent_path() / thePath.filename()};
+    return result.string();
 }
 
 }

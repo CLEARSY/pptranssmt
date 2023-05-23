@@ -16,15 +16,17 @@
     You should have received a copy of the GNU General Public License
     along with ppTransSmt. If not, see <https://www.gnu.org/licenses/>.
 */
-#include "ppTransTPTP.h"
-#include "decomposition.h"
-#include "../BAST/src/predDesc.h"
-#include "../BAST/src/exprDesc.h"
-#include "../BAST/src/exprWriter.h"
 #include <fstream>
 #include <ostream>
 #include <sstream>
 #include <string>
+
+#include "ppTransTPTP.h"
+#include "decomposition.h"
+
+#include "predDesc.h"
+#include "exprDesc.h"
+#include "exprWriter.h"
 
 ppTransException::ppTransException(const std::string &desc)
         : description(desc.data()) {};

@@ -1,7 +1,7 @@
 /** decomposition.h
 
-   \copyright Copyright © CLEARSY 2022
-   \license This file is part of ppTransSmt.
+   \copyright Copyright © CLEARSY 2023
+   \license This file is part of ppTransTPTP.
 
    ppTransSmt is free software: you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with ppTransSmt. If not, see <https://www.gnu.org/licenses/>.
 */
-#include "../POGLoader/pog.h"
+#include "pog.h"
 
 namespace decomp {
     // Replace product-type variable with normalized mapplets in pog.

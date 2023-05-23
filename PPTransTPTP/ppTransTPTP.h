@@ -23,9 +23,10 @@
 #include<set>
 #include<vector>
 #include <sstream>
-#include "../POGLoader/pog.h"
-#include "../BAST/src/vars.h"
-#include "../BAST/src/expr.h"
+
+#include "vars.h"
+#include "expr.h"
+#include "pog.h"
 
 // TODO: Should eventually be deleted
 class ppTransException : public std::exception

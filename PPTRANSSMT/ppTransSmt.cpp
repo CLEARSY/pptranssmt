@@ -22,15 +22,13 @@
 #include<map>
 #include<utility>
 #include<vector>
+#include<filesystem>
 
 using std::map;
 using std::pair;
 using std::vector;
 
-#include<QDomDocument>
-#include<QFile>
-#include <QCoreApplication>
-#include<QDebug>
+#include "tinyxml2.h"
 
 #include "pog.h"
 #include "ppTransIncr.h"
@@ -157,18 +155,14 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    QFile infile;
-    QDomDocument doc;
-    infile.setFileName(QString::fromStdString(input));
-    if(!infile.exists() || !infile.open(QIODevice::ReadOnly)){
+    tinyxml2::XMLDocument doc;
+    tinyxml2::XMLError eResult = doc.LoadFile(input.c_str());
+    if (eResult != tinyxml2::XML_SUCCESS) {
         std::cout << "Error: Cannot open input file.\n";
         exit(EXIT_FAILURE);
     }
 
-    doc.setContent(&infile);
-    infile.close();
-
-    pog::Pog pog = pog::read(doc);
+    pog::Pog pog = pog::read(&doc);
 
     /* The presence of -a parameters indicates that
      * ppTransSmt is used as a writer tool in a proof mechanism:

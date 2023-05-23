@@ -24,5 +24,6 @@ endif()
 
 add_subdirectory(BAST)
 add_subdirectory(POGLoader)
+add_subdirectory(POGPrinter)
 add_subdirectory(PPTRANSSMT)
 add_subdirectory(PPTransTPTP)
