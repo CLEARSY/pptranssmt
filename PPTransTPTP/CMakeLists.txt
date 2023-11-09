@@ -32,4 +32,4 @@ add_executable(ppTransTPTP
         ${PPTRANSTPTP_SRC}
         )
 
-target_link_libraries(ppTransTPTP POGLoader BAST Qt5::Core Qt5::Xml)
+target_link_libraries(ppTransTPTP POGLoader ASTLIB Qt5::Core Qt5::Xml)
