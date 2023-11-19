@@ -2479,85 +2479,55 @@ namespace ppTransTPTP {
             const std::string &minint,
             const std::string &maxint) {
 
-        std::string tff_set_0_type = "tff(set_0_type,type,(set_0: $tType )).";
-        std::string tff_mem0_type = "tff(mem0_type,type,(mem0: ( $int * set_0 ) > $o )).";
-        std::string tff_set_1_type = "tff(set_1_type,type,(set_1: $tType )).";
-        std::string tff_mem1_type = "tff(mem1_type,type,(mem1: ( $real * set_1 ) > $o )).";
-        std::string tff_b_division_type = "tff(b_division_type,type,(divB: ( $int * $int ) > $int )).";
-        std::string tff_b_division_def_1 = "tff(b_division_def_1,axiom,(! [X: $int,Y: $int] : (( $lesseq(0,X)& $less(0,Y))=> divB(X,Y) = $quotient_f(X,Y)))).";
-        std::string tff_b_division_def_2 = "tff(b_division_def_2,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(0,Y))=> divB(X,Y) = $uminus($quotient_f($uminus(X),Y)) ) )).";
-        std::string tff_b_division_def_3 = "tff(b_division_def_3,axiom,(! [X: $int,Y: $int] : (( $lesseq(0,X)& $less(Y,0))=> divB(X,Y) = $quotient_f(X,Y)))).";
-        std::string tff_b_division_def_4 = "tff(b_division_def_3,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(Y,0))=> divB(X,Y) = $quotient_f($uminus(X),$uminus(Y)) ) )).";
-        std::string tff_exp_type = "tff(exp_type,type,(exp: ( $int * $int ) > $int )).";
-        std::string tff_exp_def_1 = "tff(exp_def_1,axiom,(! [X: $int] : (( X != 0)=> exp(X,0) = 1 ) )).";
-        std::string tff_exp_def_2 = "tff(exp_def_2,axiom,(! [X: $int,Y: $int] : (( $greatereq(Y,1))=> exp(X,Y) = $sum(X,exp(X,$difference(Y,1))) ) )).";
-        std::string tff_rexp_type = "tff(rexp_type,type,(rexp: ( $real * $int ) > $real )).";
-        std::string tff_rexp_def_1 = "tff(rexp_def_1,axiom,(! [X: $real] : (( X != 0.0)=> rexp(X,0) = 1.0 ) )).";
-        std::string tff_rexp_def_2 = "tff(rexp_def_2,axiom,(! [X: $real,Y: $int] : (( $greatereq(Y,1))=> rexp(X,Y) = $sum(X,rexp(X,$difference(Y,1))) ) )).";
+    using std::string;
 
-        std::string tff_isum_type = "tff(isum_type,type,(isum: set_0 > $int )).";
-        std::string tff_isum_def_1 = "tff(isum_def_1,axiom,(! [S: set_0,X: $int] : ( ( ~ mem0(X,S))=> isum(S) = 0 ) )).";
-        std::string tff_isum_def_2 = "tff(isum_def_2,axiom,(! [S: set_0,E: $int,N: $int] : ( ( isum(S) = N & ~ mem0(E,S) & ! [X: $int] : ( mem0(X,S)=> ( X = E | mem0(X,S) ) ) & ! [X: $int] : ( mem0(X,S)=> ( X = E | mem0(X,S) ) ) )=> isum(S) = $sum(N,E) ) )).";
+    const string prelude = R"(
+        tff(set_0_type,type,(set_0: $tType )).
+        tff(mem0_type,type,(mem0: ( $int * set_0 ) > $o )).
+        tff(set_1_type,type,(set_1: $tType )).
+        tff(mem1_type,type,(mem1: ( $real * set_1 ) > $o )).
+        tff(b_division_type,type,(divB: ( $int * $int ) > $int )).
+        tff(b_division_def_1,axiom,(! [X: $int,Y: $int] : (( $lesseq(0,X)& $less(0,Y))=> divB(X,Y) = $quotient_f(X,Y)))).
+        tff(b_division_def_2,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(0,Y))=> divB(X,Y) = $uminus($quotient_f($uminus(X),Y)) ) )).
+        tff(b_division_def_3,axiom,(! [X: $int,Y: $int] : (( $lesseq(0,X)& $less(Y,0))=> divB(X,Y) = $quotient_f(X,Y)))).
+        tff(b_division_def_4,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(Y,0))=> divB(X,Y) = $quotient_f($uminus(X),$uminus(Y)) ) )).
+        tff(exp_type,type,(exp: ( $int * $int ) > $int )).
+        tff(exp_def_1,axiom,(! [X: $int] : (( X != 0)=> exp(X,0) = 1 ) )).
+        tff(exp_def_2,axiom,(! [X: $int,Y: $int] : (( $greatereq(Y,1))=> exp(X,Y) = $sum(X,exp(X,$difference(Y,1))) ) )).
+        tff(rexp_type,type,(rexp: ( $real * $int ) > $real )).
+        tff(rexp_def_1,axiom,(! [X: $real] : (( X != 0.0)=> rexp(X,0) = 1.0 ) )).
+        tff(rexp_def_2,axiom,(! [X: $real,Y: $int] : (( $greatereq(Y,1))=> rexp(X,Y) = $sum(X,rexp(X,$difference(Y,1))) ) )).
+        tff(isum_type,type,(isum: set_0 > $int )).
+        tff(isum_def_1,axiom,( ! [S: set_0] : (! [X: $int] : (~ mem0(X,S) ) => isum(S) = 0 ))).
+        tff(isum_def_2,axiom,( ! [S1: set_0,S2: set_0,E: $int,N: $int] : ( ( isum(S1) = N & ~ mem0(E,S1) & ! [X: $int] : ( mem0(X,S2) => ( X = E | mem0(X,S1) ) ) & ! [X: $int] :  ( mem0(X,S1) => mem0(X,S2) ) ) => isum(S2) = $sum(N,E) ) )).
+        tff(rsum_type,type,(rsum: set_1 > $real )).
+        tff(rsum_def_1,axiom,(! [S: set_1,X: $real] : ( ( ~ mem1(X,S))=> rsum(S) = 0.0 ) )).
+        tff(rsum_def_2,axiom,(! [S1: set_1, S2: set_1,E: $real,N: $real] : ( ( rsum(S1) = N & ~ mem1(E,S1) & ! [X: $real] : ( mem1(X,S2) => ( X = E | mem1(X,S1) ) ) & ! [X: $real] :  ( mem1(X,S1) => mem1(X,S2) ) ) => rsum(S2) = $sum(N,E) ) )).
+        tff(iprod_type,type,(iprod: set_0 > $int )).
+        tff(iprod_def_1,axiom,(! [S: set_0,X: $int] : ( ( ~ mem0(X,S))=> iprod(S) = 1 ) )).
+        tff(iprod_def_2,axiom,( ! [S1: set_0,S2: set_0,E: $int,N: $int] : ( ( iprod(S1) = N & ~ mem0(E,S1) & ! [X: $int] : ( mem0(X,S2) => ( X = E | mem0(X,S1) ) ) & ! [X: $int] : ( ( X = E | mem0(X,S1) ) => mem0(X,S2) ) ) => isum(S2) = $product(N,E) ) )).
+        tff(rprod_type,type,(rprod: set_1 > $real )).
+        tff(rprod_def_1,axiom,(! [S: set_1,X: $real] : ( ( ~ mem1(X,S))=> rprod(S) = 1.0 ) )).
+        tff(rprod_def_2,axiom,(! [S1: set_1,S2: set_1,E: $real,N: $real] : ( ( rprod(S1) = N & ~ mem1(E,S1) & ! [X: $real] : ( mem1(X,S2) => ( X = E | mem1(X,S1) ) ) & ! [X: $real] : ( ( X = E | mem1(X,S1) ) => mem1(X,S2) ) ) => rprod(S2) = $sum(N,E) ) )).
+        tff(min_int_type,type,(min_int: $int )).
+        tff_max_int_type = "tff(max_int_type,type,(max_int: $int )).
+        )";
+    const string tff_min_int_axiom = "tff(min_int_axiom,axiom,(min_int = $uminus(" + minint + " ))).";
+    const string tff_max_int_axiom = "tff(max_int_axiom,axiom,(max_int =" + maxint+ ")).";
 
-        std::string tff_rsum_type = "tff(rsum_type,type,(rsum: set_1 > $real )).";
-        std::string tff_rsum_def_1 = "tff(rsum_def_1,axiom,(! [S: set_1,X: $real] : ( ( ~ mem1(X,S))=> rsum(S) = 0.0 ) )).";
-        std::string tff_rsum_def_2 = "tff(rsum_def_2,axiom,(! [S1: set_1, S2: set_1,E: $real,N: $real] : ( ( rsum(S1) = N & ~ mem1(E,S1) & ! [X: $real] : ( mem1(X,S2) => ( X = E | mem1(X,S1) ) ) & ! [X: $real] : ( ( X = E | mem1(X,S1) ) => mem1(X,S2) ) ) => rsum(S2) = $sum(N,E) ) )).";
-
-    std::string tff_iprod_type = "tff(iprod_type,type,(iprod: set_0 > $int )).";
-    std::string tff_iprod_def_1 = "tff(iprod_def_1,axiom,(! [S: set_0,X: $int] : ( ( ~ mem0(X,S))=> iprod(S) = 1 ) )).";
-    //TODO: fix this
-    std::string tff_iprod_def_2 = "tff(iprod_def_2,axiom,( ! [S1: set_0,S2: set_0,E: $int,N: $int] : ( ( iprod(S1) = N & ~ mem0(E,S1) & ! [X: $int] : ( mem0(X,S2) => ( X = E | mem0(X,S1) ) ) & ! [X: $int] : ( ( X = E | mem0(X,S1) ) => mem0(X,S2) ) ) => isum(S2) = $product(N,E) ) )).";
-
-    std::string tff_rprod_type = "tff(rprod_type,type,(rprod: set_1 > $real )).";
-    std::string tff_rprod_def_1 = "tff(rprod_def_1,axiom,(! [S: set_1,X: $real] : ( ( ~ mem1(X,S))=> rprod(S) = 1.0 ) )).";
-    std::string tff_rprod_def_2 = "tff(rprod_def_2,axiom,(! [S1: set_1,S2: set_1,E: $real,N: $real] : ( ( rprod(S1) = N & ~ mem1(E,S1) & ! [X: $real] : ( mem1(X,S2) => ( X = E | mem1(X,S1) ) ) & ! [X: $real] : ( ( X = E | mem1(X,S1) ) => mem1(X,S2) ) ) => rprod(S2) = $sum(N,E) ) )).";
-
-
-    std::string tff_min_int_type = "tff(min_int_type,type,(min_int: $int )).";
-    std::string tff_min_int_axiom = "tff(min_int_axiom,axiom,(min_int = $uminus(" + minint + " ))).";
-    std::string tff_max_int_type = "tff(max_int_type,type,(max_int: $int )).";
-    std::string tff_max_int_axiom = "tff(max_int_axiom,axiom,(max_int =" + maxint+ ")).";
-
-        out << "%--------------------------------------------------------------------------" << endl;
-        out << "% File     : ." << endl;
-        out << "% Domain   : Atelier-B Proof Obligations - translated to TPTP" << endl;
-        out << "% Problem  : PUZ005+1" << endl;
-        out << "% Version  : TPTP v5.3.0. Released v2.2.0." << endl;
-        out << "% English  : " << endl;
-        out << "% Comments : Autogenerated by PPTRANS-TPTP" << endl;
-        out << "% Source   : " << endl;
-        out << "%--------------------------------------------------------------------------" << endl;
-        out << tff_set_0_type << endl;
-        out << tff_mem0_type << endl;
-        out << tff_set_1_type << endl;
-        out << tff_mem1_type << endl;
-        out << tff_b_division_type << endl;
-        out << tff_b_division_def_1 << endl;
-        out << tff_b_division_def_2 << endl;
-        out << tff_b_division_def_3 << endl;
-        out << tff_b_division_def_4 << endl;
-        out << tff_exp_type << endl;
-        out << tff_exp_def_1 << endl;
-        out << tff_exp_def_2 << endl;
-        out << tff_rexp_type << endl;
-        out << tff_rexp_def_1 << endl;
-        out << tff_rexp_def_2 << endl;
-        out << tff_isum_type << endl;
-        out << tff_isum_def_1 << endl;
-        out << tff_isum_def_2 << endl;
-        out << tff_rsum_type << endl;
-        out << tff_rsum_def_1 << endl;
-        out << tff_rsum_def_2 << endl;
-        out << tff_iprod_type << endl;
-        out << tff_iprod_def_1 << endl;
-        out << tff_iprod_def_2 << endl;
-        out << tff_rprod_type << endl;
-        out << tff_rprod_def_1 << endl;
-        out << tff_rprod_def_2 << endl;
-        out << tff_min_int_type << endl;
-        out << tff_min_int_axiom << endl;
-        out << tff_max_int_type << endl;
-        out << tff_max_int_axiom << endl;
-        out << "%--------------------------------------------------------------------------" << endl;
-    }
+    out << "%--------------------------------------------------------------------------" << endl
+        << "% File     : ." << endl
+        << "% Domain   : Atelier-B Proof Obligations - translated to TPTP" << endl
+        << "% Problem  : PUZ005+1" << endl
+        << "% Version  : TPTP v5.3.0. Released v2.2.0." << endl
+        << "% English  : " << endl
+        << "% Comments : Autogenerated by PPTRANS-TPTP" << endl
+        << "% Source   : " << endl
+        << "%--------------------------------------------------------------------------" << endl
+        << prelude << endl
+        << tff_min_int_axiom << endl
+        << tff_max_int_axiom << endl
+        << "%--------------------------------------------------------------------------" << endl;
 }
+
+} // namespace ppTransTPTP

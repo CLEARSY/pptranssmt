@@ -20,6 +20,8 @@
 #define POG_H
 
 #include <vector>
+#include <variant>
+using std::variant;
 #include <string>
 #include <QDomDocument>
 
@@ -96,6 +98,7 @@ namespace pog {
             size_t hash;
             std::vector<Set> gsets;
             std::vector<Pred> ghyps; // chaque element d'une conjonction est stocké séparement
+            std::vector<variant<Set, Pred>> contents;
     };
 
     class Pog {

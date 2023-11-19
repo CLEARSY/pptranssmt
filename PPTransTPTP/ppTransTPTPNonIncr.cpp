@@ -94,7 +94,7 @@ namespace ppTransNonIncr {
             const std::vector<pog::Define> &vec,
             const std::string &d) {
         int pos = findDef(vec, d);
-        int nbChildren = vec[pos].gsets.size() + vec[pos].ghyps.size();
+        int nbChildren = vec[pos].contents.size();
         if (nbChildren == 0) {
             return {"; Definition " + vec[pos].name + " = true", {}};
         }
@@ -103,13 +103,12 @@ namespace ppTransNonIncr {
         if (nbChildren > 1)
             str << " (and";
         std::set<std::string> used_ids;
-        for (const auto &s: vec[pos].gsets) {
+        for (const auto &e: vec[pos].contents) {
             str << " ";
-            ppTransTPTP::ppTrans(str, env, s, used_ids);
-        }
-        for (const auto &h: vec[pos].ghyps) {
-            str << " ";
-            ppTransTPTP::ppTrans(str, env, h, used_ids);
+            if (std::holds_alternative<pog::Set>(e))
+                ppTransTPTP::ppTrans(str, env, std::get<pog::Set>(e), used_ids);
+            else
+                ppTransTPTP::ppTrans(str, env, std::get<Pred>(e), used_ids);
         }
         if (nbChildren > 1)
             str << "))";
@@ -175,10 +174,15 @@ namespace ppTransNonIncr {
                 // defs
                 for (auto &s: group.definitions) {
                     const pog::Define &def = pog.defines[findDef(pog.defines, s)];
-                    for (auto &h: def.ghyps)
-                        updateRpVars(rpVars, h);
-                    for (auto &h: def.gsets)
-                        updateRpVars(rpVars, h);
+                    for (auto &e: def.contents) {
+                        if (std::holds_alternative<Pred>(e)) {
+                            const auto &hyp {std::get<Pred>(e)};
+                            updateRpVars(rpVars, hyp);
+                        } else {
+                            const auto &set {std::get<pog::Set>(e)};
+                            updateRpVars(rpVars, set);
+                        }
+                    }
                 }
                 // global hyps
                 for (auto &h: group.hyps)
@@ -194,42 +198,48 @@ namespace ppTransNonIncr {
         std::set<std::string> used_ids;
 
         // definitions
-        std::vector<std::string> defines;
+        std::map<std::string, std::string> defines_tr; // name -> translation
         for (auto &def_name: group.definitions) {
             const pog::Define &def = pog.defines[findDef(pog.defines, def_name)];
-            for (int i = 0; i < def.ghyps.size(); i++) {
-                const Pred &hyp = def.ghyps[i];
-                if (rp < 0 || keepHyp(rpVars, hyp)) {
-                    auto it = definitionHyps_tr.find({def_name, i});
-                    if (it != definitionHyps_tr.end()) {
-                        merge(used_ids, it->second.second);
-                        defines.push_back(it->second.first);
-                    } else {
-                        std::set<std::string> used_ids2;
-                        std::ostringstream str;
-                        ppTransTPTP::ppTrans(str, env, hyp, used_ids2);
-                        definitionHyps_tr[{def_name, i}] = {str.str(), used_ids2};
-                        merge(used_ids, used_ids2);
-                        defines.push_back(str.str());
+            const std::string &s1 {def.name};
+            for (size_t j = 0; j < def.contents.size(); ++j) {
+                const auto &s2 {def.contents[j]};
+                string tr;
+                if (std::holds_alternative<Pred>(s2)) {
+                    const auto &hyp {std::get<Pred>(s2)};
+                    if (rp < 0 || keepHyp(rpVars, hyp)) {
+                        auto it = definitionHyps_tr.find({def_name, j});
+                        if (it != definitionHyps_tr.end()) {
+                            merge(used_ids, it->second.second);
+                            tr = it->second.first;
+                        } else {
+                            std::set<std::string> used_ids2;
+                            std::ostringstream str;
+                            ppTransTPTP::ppTrans(str, env, hyp, used_ids2);
+                            definitionHyps_tr[{def_name, j}] = {str.str(), used_ids2};
+                            merge(used_ids, used_ids2);
+                            tr = str.str();
+                        }
+                    }
+                } else {
+                    const auto &set {std::get<pog::Set>(s2)};
+                    if (rp < 0 || keepHyp(rpVars, set)) {
+                        auto it = definitionSets_tr.find({def_name, j});
+                        if (it != definitionSets_tr.end()) {
+                            merge(used_ids, it->second.second);
+                            tr = it->second.first;
+                        } else {
+                            std::set<std::string> used_ids2;
+                            std::ostringstream str;
+                            ppTransTPTP::ppTrans(str, env, set, used_ids2);
+                            definitionSets_tr[{def_name, j}] = {str.str(), used_ids2};
+                            merge(used_ids, used_ids2);
+                            tr = str.str();
+                        }
                     }
                 }
-            }
-            for (int i = 0; i < def.gsets.size(); i++) {
-                const pog::Set &set = def.gsets[i];
-                if (rp < 0 || keepHyp(rpVars, set)) {
-                    auto it = definitionSets_tr.find({def_name, i});
-                    if (it != definitionSets_tr.end()) {
-                        merge(used_ids, it->second.second);
-                        defines.push_back(it->second.first);
-                    } else {
-                        std::set<std::string> used_ids2;
-                        std::ostringstream str;
-                        ppTransTPTP::ppTrans(str, env, set, used_ids2);
-                        definitionSets_tr[{def_name, i}] = {str.str(), used_ids2};
-                        merge(used_ids, used_ids2);
-                        defines.push_back(str.str());
-                    }
-                }
+                const std::string label {s1 + ":" + std::to_string(j)};
+                defines_tr[label] = tr;
             }
         }
 
@@ -254,20 +264,20 @@ namespace ppTransNonIncr {
         }
 
         // Local Hyps
-        std::vector<std::string> localHyps;
+        std::vector<std::pair<int, std::string>> localHyps; // ref-1 -> translation
         for (auto &ref: sg.localHypsRef) {
             if (rp < 0 || !dd || keepHyp(rpVars, group.localHyps[ref - 1])) {
                 auto it = localHyps_tr.find(ref);
                 if (it != localHyps_tr.end()) {
                     merge(used_ids, it->second.second);
-                    localHyps.push_back(it->second.first);
+                    localHyps.push_back(std::make_pair(ref-1, it->second.first));
                 } else {
                     std::set<std::string> used_ids2;
                     std::ostringstream str;
                     ppTransTPTP::ppTrans(str, env, group.localHyps[ref - 1], used_ids2);
                     localHyps_tr[ref] = {str.str(), used_ids2};
                     merge(used_ids, used_ids2);
-                    localHyps.push_back(str.str());
+                    localHyps.push_back(std::make_pair(ref-1, str.str()));
                 }
             }
         }
@@ -290,19 +300,19 @@ namespace ppTransNonIncr {
         }
         out << "% Defines" << endl;
         int counter = 0;
-        for (auto &d: defines) {
-            out << "tff(definition_" << counter++ << "_def, axiom, " << d << ")." << endl << endl;
+        for (auto &d: defines_tr) {
+            out << "tff('Define:" << d.first << "', axiom, " << d.second << ")." << endl << endl;
         }
         out << "%Global hypotheses" << endl;
         counter = 0;
         for (auto &hyp: globalHyps)
-            out << "tff(gh_" << counter++ << "_def" << ", hypothesis, " << hyp << ")." << endl << endl;
+            out << "tff('gh_" << counter++ << "_def'" << ", hypothesis, " << hyp << ")." << endl << endl;
         out << "% Local hypotheses" << endl;
         counter = 0;
         for (auto &hyp: localHyps)
-            out << "tff(lh_" << counter++ << "_def" << ", hypothesis, " << hyp << ")." << endl << endl;
+            out << "tff('Local_Hyp:" << hyp.first << "'" << ", hypothesis, " << hyp.second << ")." << endl << endl;
         out << "% Goal" << endl;
-        out << "tff(goal, conjecture, " << goal.str() << ")." << endl;
+        out << "tff('Goal', conjecture, " << goal.str() << ")." << endl;
         out.close();
     }
 
