@@ -96,7 +96,7 @@ namespace ppTransNonIncr {
             const std::string &d)
     {
         int pos = findDef(vec,d);
-        int nbChildren = vec[pos].gsets.size() + vec[pos].ghyps.size();
+        int nbChildren = vec[pos].contents.size();
         if(nbChildren == 0){
             return {"; Definition " + vec[pos].name + " = true",{}};
         }
@@ -105,13 +105,12 @@ namespace ppTransNonIncr {
         if(nbChildren > 1)
             str << " (and";
         std::set<std::string> used_ids;
-        for(const auto& s : vec[pos].gsets){
+        for(const auto &e: vec[pos].contents){
             str << " ";
-            ppTrans::ppTrans(str,env,s,used_ids);
-        }
-        for(const auto& h : vec[pos].ghyps){
-            str << " ";
-            ppTrans::ppTrans(str,env,h,used_ids);
+            if (std::holds_alternative<pog::Set>(e))
+                ppTrans::ppTrans(str,env,std::get<pog::Set>(e),used_ids);
+            else
+                ppTrans::ppTrans(str,env,std::get<Pred>(e),used_ids);
         }
         if(nbChildren > 1)
             str << "))";
@@ -180,10 +179,12 @@ namespace ppTransNonIncr {
                 // defs
                 for(auto &s : group.definitions){
                     const pog::Define &def = pog.defines[findDef(pog.defines,s)];
-                    for(auto &h : def.ghyps)
-                        updateRpVars(rpVars,h);
-                    for(auto &h : def.gsets)
-                        updateRpVars(rpVars,h);
+                    for(auto &e: def.contents) {
+                        if (std::holds_alternative<pog::Set>(e))
+                            updateRpVars(rpVars,std::get<pog::Set>(e));
+                        else
+                            updateRpVars(rpVars,std::get<Pred>(e));
+                    }
                 }
                 // global hyps
                 for(auto &h : group.hyps)
@@ -203,37 +204,39 @@ namespace ppTransNonIncr {
         std::vector<std::string> defines;
         for(auto &def_name : group.definitions){
             const pog::Define &def = pog.defines[findDef(pog.defines,def_name)];
-            for(int i=0;i<def.ghyps.size();i++){
-                const Pred &hyp = def.ghyps[i];
-                if(rp < 0 || keepHyp(rpVars,hyp)){
-                    auto it = definitionHyps_tr.find({def_name,i});
-                    if(it != definitionHyps_tr.end()){
-                        merge(used_ids,it->second.second);
-                        defines.push_back(it->second.first);
-                    } else {
-                        std::set<std::string> used_ids2;
-                        std::ostringstream str;
-                        ppTrans::ppTrans(str,env,hyp,used_ids2);
-                        definitionHyps_tr[{def_name,i}] = {str.str(),used_ids2};
-                        merge(used_ids,used_ids2);
-                        defines.push_back(str.str());
+            for(size_t i = 0; i < def.contents.size(); ++i) {
+                const auto &e = def.contents[i];
+                if (std::holds_alternative<Pred>(e)) {
+                    const auto &hyp = std::get<Pred>(e);
+                    if(rp < 0 || keepHyp(rpVars,hyp)){
+                        auto it = definitionHyps_tr.find({def_name,i});
+                        if(it != definitionHyps_tr.end()){
+                            merge(used_ids,it->second.second);
+                            defines.push_back(it->second.first);
+                        } else {
+                            std::set<std::string> used_ids2;
+                            std::ostringstream str;
+                            ppTrans::ppTrans(str,env,hyp,used_ids2);
+                            definitionHyps_tr[{def_name,i}] = {str.str(),used_ids2};
+                            merge(used_ids,used_ids2);
+                            defines.push_back(str.str());
+                        }
                     }
-                }
-            }
-            for(int i=0;i<def.gsets.size();i++){
-                const pog::Set &set = def.gsets[i];
-                if(rp < 0 || keepHyp(rpVars,set)){
-                    auto it = definitionSets_tr.find({def_name,i});
-                    if(it != definitionSets_tr.end()){
-                        merge(used_ids,it->second.second);
-                        defines.push_back(it->second.first);
-                    } else {
-                        std::set<std::string> used_ids2;
-                        std::ostringstream str;
-                        ppTrans::ppTrans(str,env,set,used_ids2);
-                        definitionSets_tr[{def_name,i}] = {str.str(),used_ids2};
-                        merge(used_ids,used_ids2);
-                        defines.push_back(str.str());
+                } else {
+                    const auto &set = std::get<pog::Set>(e);
+                    if(rp < 0 || keepHyp(rpVars,set)){
+                        auto it = definitionSets_tr.find({def_name,i});
+                        if(it != definitionSets_tr.end()){
+                            merge(used_ids,it->second.second);
+                            defines.push_back(it->second.first);
+                        } else {
+                            std::set<std::string> used_ids2;
+                            std::ostringstream str;
+                            ppTrans::ppTrans(str,env,set,used_ids2);
+                            definitionSets_tr[{def_name,i}] = {str.str(),used_ids2};
+                            merge(used_ids,used_ids2);
+                            defines.push_back(str.str());
+                        }
                     }
                 }
             }

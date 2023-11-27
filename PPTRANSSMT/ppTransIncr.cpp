@@ -76,18 +76,13 @@ namespace ppTransIncr {
         decomp::decompose(pog);
         for (const auto &def : pog.defines){
             int nbChildren = 0;
-            for(const auto &s : def.gsets){
+            for(const auto &e: def.contents) {
                 std::ostringstream str;
                 str << "(define-fun |def_" << def.name << "_" << std::to_string(nbChildren) << "| () Bool ";
-                ppTrans(str,env,s);
-                str << ")";
-                defines.push_back(str.str());
-                nbChildren++;
-            }
-            for(const auto &e : def.ghyps){
-                std::ostringstream str;
-                str << "(define-fun |def_" << def.name << "_" << std::to_string(nbChildren) << "| () Bool ";
-                ppTrans(str,env,e);
+                if (std::holds_alternative<pog::Set>(e))
+                    ppTrans(str, env, std::get<pog::Set>(e));
+                else
+                    ppTrans(str, env, std::get<Pred>(e));
                 str << ")";
                 defines.push_back(str.str());
                 nbChildren++;

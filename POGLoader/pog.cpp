@@ -130,11 +130,10 @@ pog::Pog pog::read(const QDomDocument &pog){
         if(!e.hasAttribute("name"))
             throw PogException("Attribute name expected.");
 
-        size_t hash;
-        if(!e.hasAttribute("hash"))
-            throw PogException("Missing hash attribute.");
-        sscanf(e.attribute("hash").toStdString().c_str(), "%zu", &hash);
-
+        size_t hash = 0;
+        if(e.hasAttribute("hash")) {
+            sscanf(e.attribute("hash").toStdString().c_str(), "%zu", &hash);
+        }
         auto def = Define(e.attribute("name").toStdString(),hash);
         for(QDomElement ch = e.firstChildElement();
                 !ch.isNull();
@@ -142,11 +141,11 @@ pog::Pog pog::read(const QDomDocument &pog){
         {
             if(ch.tagName() == "Set"){
                 Set s = readSet(typeInfos,ch);
-                def.gsets.push_back(s);
+                def.contents.push_back(std::move(s));
             } else {
                 Pred p = Xml::readPredicate(ch,typeInfos);
                 assert(!isConj(p));
-                def.ghyps.push_back(std::move(p));
+                def.contents.push_back(std::move(p));
             }
         }
         res.defines.push_back(std::move(def));
@@ -157,15 +156,16 @@ pog::Pog pog::read(const QDomDocument &pog){
             po = po.nextSiblingElement("Proof_Obligation"))
     {
         // goalHash
-        size_t goalHash;
-        if(!po.hasAttribute("goalHash"))
-            throw PogException("Missing goalHash attribute.");
-        sscanf(po.attribute("goalHash").toStdString().c_str(), "%zu", &goalHash);
+        size_t goalHash = 0;
+        if(po.hasAttribute("goalHash")) {
+            sscanf(po.attribute("goalHash").toStdString().c_str(), "%zu", &goalHash);
+        }
         // Tag
+        std::string tag {};
         QDomElement e = po.firstChildElement("Tag");
-        if(e.isNull())
-            throw PogException("Tag element expected.");
-        std::string tag = e.text().toStdString();
+        if(!e.isNull()) {
+            tag = e.text().toStdString();
+        }
         // Definitions
         std::vector<std::string> definitions;
         for(QDomElement e = po.firstChildElement("Definition");

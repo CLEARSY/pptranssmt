@@ -66,10 +66,7 @@ tff(rexp_def_2,axiom,(
 tff(isum_type,type,(
     isum: set_0 > $int )).
 
-tff(isum_def_1,axiom,(
-    ! [S: set_0,X: $int] : 
-      ( ~ mem0(X,S)
-     => isum(S) = 0 ) )).
+tff(isum_def_1,axiom,( ! [S: set_0] : (! [X: $int] : (~ mem0(X,S) ) => isum(S) = 0 ))).
 
 tff(isum_def_2,axiom,(
     ! [S1: set_0,S2: set_0,E: $int,N: $int] : 
@@ -80,18 +77,14 @@ tff(isum_def_2,axiom,(
            => ( X = E
               | mem0(X,S1) ) )
         & ! [X: $int] : 
-            ( mem0(X,S1)
-           => ( X = E
-              | mem0(X,S1) ) ) )
+            ( mem0(X,S1) => mem0(X,S2) ) )
      => isum(S2) = $sum(N,E) ) )).
 
 tff(rsum_type,type,(
     rsum: set_1 > $real )).
 
 tff(rsum_def_1,axiom,(
-    ! [S: set_1,X: $real] : 
-      ( ~ mem1(X,S)
-     => rsum(S) = 0.0 ) )).
+    ! [S: set_1] : (! [X: $real] : (~ mem1(X,S) ) => rsum(S) = 0.0 ) )).
 
 tff(rsum_def_2,axiom,(
     ! [S1: set_1,S2: set_1,E: $real,N: $real] : 
@@ -102,53 +95,7 @@ tff(rsum_def_2,axiom,(
            => ( X = E
               | mem1(X,S1) ) )
         & ! [X: $real] : 
-            ( ( X = E
-              | mem1(X,S1) )
-           => mem1(X,S2) ) )
-     => rsum(S2) = $sum(N,E) ) )).
-
-tff(isum_type,type,(
-    isum: set_0 > $int )).
-
-tff(isum_def_1,axiom,(
-    ! [S: set_0,X: $int] : 
-      ( ~ mem0(X,S)
-     => isum(S) = 1 ) )).
-
-tff(isum_def_2,axiom,(
-    ! [S1: set_0,S2: set_0,E: $int,N: $int] : 
-      ( ( isum(S1) = N
-        & ~ mem0(E,S1)
-        & ! [X: $int] : 
-            ( mem0(X,S2)
-           => ( X = E
-              | mem0(X,S1) ) )
-        & ! [X: $int] : 
-            ( ( X = E
-              | mem0(X,S1) )
-           => mem0(X,S2) ) )
-     => isum(S2) = $sum(N,E) ) )).
-
-tff(rsum_type,type,(
-    rsum: set_1 > $real )).
-
-tff(rsum_def_1,axiom,(
-    ! [S: set_1,X: $real] : 
-      ( ~ mem1(X,S)
-     => rsum(S) = 1.0 ) )).
-
-tff(rsum_def_2,axiom,(
-    ! [S1: set_1,S2: set_1,E: $real,N: $real] : 
-      ( ( rsum(S1) = N
-        & ~ mem1(E,S1)
-        & ! [X: $real] : 
-            ( mem1(X,S2)
-           => ( X = E
-              | mem1(X,S1) ) )
-        & ! [X: $real] : 
-            ( ( X = E
-              | mem1(X,S1) )
-           => mem1(X,S2) ) )
+            ( mem1(X,S1) => mem1(X,S2) ) )
      => rsum(S2) = $sum(N,E) ) )).
 
 tff(max_type,type,(
