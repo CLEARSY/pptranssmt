@@ -22,5 +22,5 @@ add_library(POGLoader
     ${POG_HEADERS}
 )
 
-target_link_libraries(POGLoader ASTLIB Qt5::Core Qt5::Xml)
+target_link_libraries(POGLoader BAST Qt5::Core Qt5::Xml)
 
