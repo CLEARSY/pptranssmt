@@ -208,6 +208,7 @@ namespace ppTrans {
             }
 
             std::string mem = this->registerMem(ty,used_ids);
+            const std::string tyStr {ty.to_string()};
 
             smtLibDeclarations[res] =
                 "(declare-fun " + res + " ("+t_lst+t_lst+" "+ sty + " Int) Bool)\n"
@@ -215,13 +216,13 @@ namespace ppTrans {
                 " (forall ((f "+sty+")"+x_dec+y_dec+")\n"
                 "  (=> ("+res + x_lst + y_lst + " f 0) (and "+xy_eqs+" (exists ("+z_dec+") ("+mem+x_lst+y_lst+" f))))\n"
                 " )\n"
-                " :named |iterate_axiom_1|\n"
+                " :named |iterate_axiom_1 "+tyStr+"|\n"
                 "))\n"
                 "(assert (!\n"
                 " (forall ((f "+sty+")"+x_dec+")\n"
                 "  (=> (exists ("+y_dec+") ("+mem+x_lst+y_lst+" f)) ("+ res + x_lst + x_lst + " f 0))\n"
                 " )\n"
-                " :named |iterate_axiom_2|\n"
+                " :named |iterate_axiom_2 "+tyStr+"|\n"
                 "))\n"
                 "(assert (!\n"
                 " (forall ((f "+sty+") (n Int)"+x_dec+y_dec+")\n"
@@ -233,7 +234,7 @@ namespace ppTrans {
                 "   )\n"
                 "  )\n"
                 " )\n"
-                " :named |iterate_axiom_3|\n"
+                " :named |iterate_axiom_3 "+tyStr+"|\n"
                 "))\n"
                 "(assert (!\n"
                 " (forall ((f "+sty+") (n Int)"+x_dec+y_dec+")\n"
@@ -245,9 +246,8 @@ namespace ppTrans {
                 "   )\n"
                 "  )\n"
                 " )\n"
-                " :named |iterate_axiom_4|\n"
+                " :named |iterate_axiom_4 "+tyStr+"|\n"
                 "))\n";
-
         }
         used_ids.insert(res);
         return res;
