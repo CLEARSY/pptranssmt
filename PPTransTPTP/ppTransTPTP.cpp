@@ -22,6 +22,7 @@
 #include "../BAST/src/exprDesc.h"
 #include "../BAST/src/exprWriter.h"
 #include <fstream>
+#include <iostream>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -749,7 +750,7 @@ namespace ppTransTPTP {
                 return {b.lhs.copy(), b.rhs.copy()};
             }
         }
-        assert(e.getTag() != Expr::EKind::Id);
+//        assert(e.getTag() != Expr::EKind::Id);
         assert(e.getTag() != Expr::EKind::Struct);
         Expr mp = getFreshVars(e.getType(), local_eqs.vars);
         local_eqs.add_eq(mp.copy(), e.copy());
@@ -817,6 +818,7 @@ namespace ppTransTPTP {
     void ppTrans_eq(std::ostringstream &str, Context &ctx, const Expr &lhs, const Expr &rhs,
                     std::set<std::string> &used_ids) {
         //assert(BType::weak_eq(lhs.getType(),rhs.getType()));
+        std::cerr << "ppTrans_eq: " << lhs.show() << " = " << rhs.show() << std::endl;
         const BType &ty = lhs.getType();
 
         // f(a) = b ----> (a,b) : f
@@ -1107,6 +1109,7 @@ namespace ppTransTPTP {
 
     void ppTrans_mem(std::ostringstream &str, Context &ctx, const Expr &lhs, const Expr::BinaryExpr &set,
                      std::set<std::string> &used_ids) {
+        std::cerr << "ppTrans_mem: " << lhs.show() << std::endl;
         BType ty_rhs = BType::POW(lhs.getType());
         switch (set.op) {
             case Expr::BinaryOp::Cartesian_Product: {
@@ -2494,7 +2497,7 @@ tff(b_division_def_2,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(0,Y))=>
 tff(b_division_def_3,axiom,(! [X: $int,Y: $int] : (( $lesseq(0,X)& $less(Y,0))=> divB(X,Y) = $quotient_f(X,Y)))).
 tff(b_division_def_4,axiom,(! [X: $int,Y: $int] : (( $lesseq(X,0)& $less(Y,0))=> divB(X,Y) = $quotient_f($uminus(X),$uminus(Y)) ) )).
 tff(exp_type,type,(exp: ( $int * $int ) > $int )).
-tff(exp_def_1,axiom,(! [X: $int] : (( X != 0)=> exp(X,0) = 1 ) )).
+tff(exp_def_1,axiom,(! [X: $int] : ( exp(X,0) = 1 ) )).
 tff(exp_def_2,axiom,(! [X: $int,Y: $int] : (( $greatereq(Y,1))=> exp(X,Y) = $sum(X,exp(X,$difference(Y,1))) ) )).
 tff(rexp_type,type,(rexp: ( $real * $int ) > $real )).
 tff(rexp_def_1,axiom,(! [X: $real] : (( X != 0.0)=> rexp(X,0) = 1.0 ) )).

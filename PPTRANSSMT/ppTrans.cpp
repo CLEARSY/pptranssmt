@@ -2371,7 +2371,7 @@ namespace ppTrans {
         out << "(assert (!\n";
         out << " (forall ((x Int))\n";
         out << "  (!\n";
-        out << "   (=> (not (= x 0)) (= (exp x 0) 1))\n";
+        out << "   (= (exp x 0) 1)\n";
         out << "   :pattern ((exp x 0))\n";
         out << "  )\n";
         out << " )\n";
