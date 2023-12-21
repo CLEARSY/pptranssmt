@@ -228,7 +228,7 @@ namespace ppTransTPTP {
             std::string z_lst;
             std::string xy_eqs;
             // TODO - this is a bit ugly
-            for (int i = 0; i < vars_x.size(); i++) {
+            for (size_t i = 0; i < vars_x.size(); i++) {
                 const TypedVar &x = vars_x[i];
                 const TypedVar &y = vars_y[i];
                 const TypedVar &z = vars_z[i];
@@ -402,7 +402,7 @@ namespace ppTransTPTP {
                 const BType::RecordType &s = ty.toRecordType();
                 std::string rec = ctx.registerRecordType(ty, used_ids);
                 std::string accu = "(" + rec;
-                for (int i = 0; i < s.fields.size(); ++i) {
+                for (size_t i = 0; i < s.fields.size(); ++i) {
                     auto &fd = s.fields.at(i);
                     accu += ppTrans(ctx, fd.second, used_ids);
                     if (i < s.fields.size() - 1)
@@ -690,7 +690,7 @@ namespace ppTransTPTP {
                     case Expr::QuantifiedOp::RSum: {
                         assert(!q.vars.empty());
                         BType tdom = q.vars[0].type;
-                        for (int i = 1; i < q.vars.size(); i++)
+                        for (size_t i = 1; i < q.vars.size(); i++)
                             tdom = BType::PROD(tdom, q.vars[i].type);
                         Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda, q.vars, q.cond.copy(),
                                                           q.body.copy(),
@@ -702,7 +702,7 @@ namespace ppTransTPTP {
                     case Expr::QuantifiedOp::RProduct: {
                         assert(!q.vars.empty());
                         BType tdom = q.vars[0].type;
-                        for (int i = 1; i < q.vars.size(); i++)
+                        for (size_t i = 1; i < q.vars.size(); i++)
                             tdom = BType::PROD(tdom, q.vars[i].type);
                         Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda, q.vars, q.cond.copy(),
                                                           q.body.copy(),
@@ -714,7 +714,7 @@ namespace ppTransTPTP {
                     case Expr::QuantifiedOp::ISum: {
                         assert(!q.vars.empty());
                         BType tdom = q.vars[0].type;
-                        for (int i = 1; i < q.vars.size(); i++)
+                        for (size_t i = 1; i < q.vars.size(); i++)
                             tdom = BType::PROD(tdom, q.vars[i].type);
                         Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda, q.vars, q.cond.copy(),
                                                           q.body.copy(),
@@ -726,7 +726,7 @@ namespace ppTransTPTP {
                     case Expr::QuantifiedOp::IProduct: {
                         assert(!q.vars.empty());
                         BType tdom = q.vars[0].type;
-                        for (int i = 1; i < q.vars.size(); i++)
+                        for (size_t i = 1; i < q.vars.size(); i++)
                             tdom = BType::PROD(tdom, q.vars[i].type);
                         Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda, q.vars, q.cond.copy(),
                                                           q.body.copy(),
@@ -818,7 +818,6 @@ namespace ppTransTPTP {
     void ppTrans_eq(std::ostringstream &str, Context &ctx, const Expr &lhs, const Expr &rhs,
                     std::set<std::string> &used_ids) {
         //assert(BType::weak_eq(lhs.getType(),rhs.getType()));
-        std::cerr << "ppTrans_eq: " << lhs.show() << " = " << rhs.show() << std::endl;
         const BType &ty = lhs.getType();
 
         // f(a) = b ----> (a,b) : f
@@ -1044,7 +1043,7 @@ namespace ppTransTPTP {
                 auto fds2 = splitRecord(eqs, rhs);
                 std::vector<Pred> conj;
                 assert(fds1.size() == fds2.size());
-                for (int i = 0; i < fds1.size(); i++) {
+                for (size_t i = 0; i < fds1.size(); i++) {
                     assert(fds1[i].first == fds2[i].first);
                     conj.push_back(
                             Pred::makeExprComparison(
@@ -1109,7 +1108,6 @@ namespace ppTransTPTP {
 
     void ppTrans_mem(std::ostringstream &str, Context &ctx, const Expr &lhs, const Expr::BinaryExpr &set,
                      std::set<std::string> &used_ids) {
-        std::cerr << "ppTrans_mem: " << lhs.show() << std::endl;
         BType ty_rhs = BType::POW(lhs.getType());
         switch (set.op) {
             case Expr::BinaryOp::Cartesian_Product: {
@@ -1204,7 +1202,7 @@ namespace ppTransTPTP {
                 Expr x = getFreshVars(ty_lhs, vars);
                 ctx.push_vars(vars);
                 str << "(? [";
-                for (int i = 0; i < vars.size(); ++i) {
+                for (size_t i = 0; i < vars.size(); ++i) {
                     const auto &v = vars.at(i);
                     str << localVarNameToString(v.name) << " : " << ppTrans(ctx, v.type, used_ids);
                     if (i < vars.size() - 1)
@@ -1573,7 +1571,7 @@ namespace ppTransTPTP {
                 std::map<VarName, Expr> subst;
                 assert(!rhs.vars.empty());
                 Expr tmp = std::move(lhs_pair.first);
-                for (int i = static_cast<int>(rhs.vars.size()) - 1; i > 0; i--) {
+                for (size_t i = rhs.vars.size() - 1; 0 < i; --i) {
                     auto pair = splitPair(eqs, tmp);
                     subst[rhs.vars[i].name] = std::move(pair.second);
                     tmp = std::move(pair.first);
@@ -2063,7 +2061,7 @@ namespace ppTransTPTP {
                 Expr tmp = lhs.copy();
                 LocalEquations eqs;
                 std::ostringstream str2;
-                for (int i = q.vars.size() - 1; i > 0; i--) {
+                for (size_t i = q.vars.size() - 1; i > 0; i--) {
                     auto pair = splitPair(eqs, tmp);
                     subst[q.vars[i].name] = std::move(pair.second);
                     tmp = std::move(pair.first);
@@ -2101,7 +2099,7 @@ namespace ppTransTPTP {
                 auto lhs_fields = splitRecord(eqs, lhs);
                 std::vector<Pred> conj;
                 assert(lhs_fields.size() == s.fields.size());
-                for (int i = 0; i < s.fields.size(); i++) {
+                for (size_t i = 0; i < s.fields.size(); i++) {
                     assert(lhs_fields[i].first == s.fields[i].first);
                     conj.push_back(
                             Pred::makeExprComparison(
@@ -2338,7 +2336,7 @@ namespace ppTransTPTP {
                     return ppTrans(str, ctx, n.operands.at(0), used_ids);
                 } else {
                     str << "(";
-                    for (int i = 0; i < n.operands.size(); i++) {
+                    for (size_t i = 0; i < n.operands.size(); i++) {
                         auto &q = n.operands.at(i);
                         ppTrans(str, ctx, q, used_ids);
                         if (i < n.operands.size() - 1) {
@@ -2358,7 +2356,7 @@ namespace ppTransTPTP {
                     return ppTrans(str, ctx, n.operands.at(0), used_ids);
                 } else {
                     str << "(";
-                    for (int i = 0; i < n.operands.size(); i++) {
+                    for (size_t i = 0; i < n.operands.size(); i++) {
                         auto &q = n.operands.at(i);
                         ppTrans(str, ctx, q, used_ids);
                         if (i < n.operands.size() - 1) {
@@ -2372,7 +2370,7 @@ namespace ppTransTPTP {
             case Pred::PKind::Forall: {
                 auto &q = p.toForall();
                 str << "! [";
-                for (int i = 0; i < q.vars.size(); i++) {
+                for (size_t i = 0; i < q.vars.size(); i++) {
                     // Bounded variables
                     const auto &v = q.vars.at(i);
                     str << localVarNameToString(v.name) << " : " << ppTrans(ctx, v.type, used_ids);
@@ -2392,7 +2390,7 @@ namespace ppTransTPTP {
             case Pred::PKind::Exists: {
                 auto &q = p.toExists();
                 str << "? [";
-                for (int i = 0; i < q.vars.size(); ++i) {
+                for (size_t i = 0; i < q.vars.size(); ++i) {
                     const auto &v = q.vars.at(i);
                     str << localVarNameToString(v.name) << " : " << ppTrans(ctx, v.type, used_ids);
                     if (i < q.vars.size() - 1) {
@@ -2417,7 +2415,7 @@ namespace ppTransTPTP {
             str << f.str();
         } else {
             str << "! [";
-            for (int i = 0; i < local_eqs.vars.size(); ++i) {
+            for (size_t i = 0; i < local_eqs.vars.size(); ++i) {
                 auto &v = local_eqs.vars.at(i);
                 str << localVarNameToString(v.name) << " : " << ppTrans(env, v.type, used_ids);
                 if (i < local_eqs.vars.size() - 1)
@@ -2428,7 +2426,7 @@ namespace ppTransTPTP {
                 ppTrans_eq(str, env, local_eqs.eqs[0].first, local_eqs.eqs[0].second, used_ids);
             } else {
                 str << "(";
-                for (int i = 0; i < local_eqs.eqs.size(); ++i) {
+                for (size_t i = 0; i < local_eqs.eqs.size(); ++i) {
                     auto &eq = local_eqs.eqs.at(i);
                     ppTrans_eq(str, env, eq.first, eq.second, used_ids);
                     if (i < local_eqs.eqs.size() - 1)
@@ -2465,7 +2463,7 @@ namespace ppTransTPTP {
                     Expr::makeNaryExpr(Expr::NaryOp::Set, std::move(elts), set.setName.type));
             ppTrans(str, env, eq, used_ids);
             str << " & ((";
-            for (int i = 0; i < set.elts.size() - 1; i++) {
+            for (size_t i = 0; i < set.elts.size() - 1; i++) {
                 auto current = set.elts[i];
                 auto next = set.elts[i + 1];
                 str << "(" << env.registerId(current.name, current.type, used_ids)

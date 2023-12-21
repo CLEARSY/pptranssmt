@@ -321,8 +321,11 @@ void decomp::decompose(DContext &ctx, Pred &p){
 
 void decomp::decompose(DContext &ctx, pog::Define &def){
     // Remark: hash is not recomputed
-    for(auto &p : def.ghyps)
-        decompose(ctx,p);
+    for(auto &p : def.contents) {
+        if (std::holds_alternative<Pred>(p)) {
+            decompose(ctx,std::get<Pred>(p));
+        }
+    }
 }
 
 void decomp::decompose(DContext &ctx, pog::PO &sg){

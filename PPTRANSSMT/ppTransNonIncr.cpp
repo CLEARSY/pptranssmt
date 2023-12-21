@@ -78,7 +78,7 @@ namespace ppTransNonIncr {
             const std::string &d)
     {
         int pos = -1;
-        for(int i=0;i<vec.size();i++){
+        for(size_t i=0;i<vec.size();i++){
             if(vec[i].name == d){
                 pos = i;
                 break;
@@ -89,35 +89,6 @@ namespace ppTransNonIncr {
     }
 
     using translation_t = std::pair<std::string,std::set<std::string>>;
-
-    static translation_t ppTrans(
-            ppTrans::Context &env,
-            const std::vector<pog::Define> &vec,
-            const std::string &d)
-    {
-        int pos = findDef(vec,d);
-        int nbChildren = vec[pos].contents.size();
-        if(nbChildren == 0){
-            return {"; Definition " + vec[pos].name + " = true",{}};
-        }
-        std::ostringstream str;
-        str << "; Definition " << vec[pos].name << "\n(assert";
-        if(nbChildren > 1)
-            str << " (and";
-        std::set<std::string> used_ids;
-        for(const auto &e: vec[pos].contents){
-            str << " ";
-            if (std::holds_alternative<pog::Set>(e))
-                ppTrans::ppTrans(str,env,std::get<pog::Set>(e),used_ids);
-            else
-                ppTrans::ppTrans(str,env,std::get<Pred>(e),used_ids);
-        }
-        if(nbChildren > 1)
-            str << "))";
-        else
-            str << ")";
-        return {str.str(),used_ids};
-    }
 
     static void updateRpVars(
             std::set<VarName> &rpVars,
@@ -244,7 +215,7 @@ namespace ppTransNonIncr {
 
         // Global hyps
         std::vector<std::string> globalHyps;
-        for(int ref=0;ref<group.hyps.size();ref++){
+        for(size_t ref=0;ref<group.hyps.size();ref++){
             const Pred &hyp = group.hyps[ref];
             if(rp < 0 || keepHyp(rpVars,hyp)){
                 auto it = globalHyps_tr.find(ref);
@@ -361,10 +332,10 @@ namespace ppTransNonIncr {
         std::map<std::pair<std::string,int>,translation_t> definitionSets_tr;
         ppTrans::Context env;
         decomp::decompose(pog);
-        for(int group_nb=0;group_nb<pog.pos.size();group_nb++){
+        for(size_t group_nb=0;group_nb<pog.pos.size();group_nb++){
             std::map<int,translation_t> globalHyps_tr;
             std::map<int,translation_t> localHyps_tr;
-            for(int po_nb=0;po_nb<pog.pos[group_nb].simpleGoals.size();po_nb++){
+            for(size_t po_nb=0;po_nb<pog.pos[group_nb].simpleGoals.size();po_nb++){
                 std::string path { prefix + "-" + to_string(group_nb) + "-" + to_string(po_nb) + ".smt2" };
                 saveSmtLibFileNonIncr( pog, env, definitionHyps_tr, definitionSets_tr,
                                        globalHyps_tr, localHyps_tr, group_nb, po_nb, rp, dd, model,

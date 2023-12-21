@@ -70,9 +70,14 @@ namespace pog {
                     const std::vector<std::string> &definitions,
                     std::vector<Pred> &&hyps,
                     std::vector<Pred> &&localHyps,
-                    std::vector<PO> &&simpleGoals):
-                tag{tag},definitions{definitions},hyps{std::move(hyps)},
-                localHyps{std::move(localHyps)},simpleGoals{std::move(simpleGoals)},goalHash{goalHash} {};
+                    std::vector<PO> &&simpleGoals)
+                    : tag{tag}
+                    , goalHash{goalHash}
+                    , definitions{definitions}
+                    , hyps{std::move(hyps)}
+                    , localHyps{std::move(localHyps)}
+                    , simpleGoals{std::move(simpleGoals)}
+            {}
     };
 
     class Set {
@@ -96,8 +101,6 @@ namespace pog {
             Define(const std::string &name, size_t hash=0):name{name},hash{hash}{};
             std::string name;
             size_t hash;
-            std::vector<Set> gsets;
-            std::vector<Pred> ghyps; // chaque element d'une conjonction est stocké séparement
             std::vector<variant<Set, Pred>> contents;
     };
 

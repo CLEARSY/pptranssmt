@@ -192,7 +192,7 @@ namespace ppTrans {
             std::string y_lst = "";
             std::string z_lst = "";
             std::string xy_eqs = "";
-            for(int i=0;i<vars_x.size();i++){
+            for(size_t i=0;i<vars_x.size();i++){
                 const TypedVar &x = vars_x[i];
                 const TypedVar &y = vars_y[i];
                 const TypedVar &z = vars_z[i];
@@ -621,7 +621,7 @@ namespace ppTrans {
                             {
                                 assert(q.vars.size() > 0);
                                 BType tdom = q.vars[0].type;
-                                for(int i=1;i<q.vars.size();i++)
+                                for(size_t i=1;i<q.vars.size();i++)
                                     tdom = BType::PROD(tdom,q.vars[i].type);
                                 Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda,q.vars,q.cond.copy(),q.body.copy(),
                                         BType::POW(BType::PROD(tdom,q.body.getType())));
@@ -633,7 +633,7 @@ namespace ppTrans {
                             {
                                 assert(q.vars.size() > 0);
                                 BType tdom = q.vars[0].type;
-                                for(int i=1;i<q.vars.size();i++)
+                                for(size_t i=1;i<q.vars.size();i++)
                                     tdom = BType::PROD(tdom,q.vars[i].type);
                                 Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda,q.vars,q.cond.copy(),q.body.copy(),
                                         BType::POW(BType::PROD(tdom,q.body.getType())));
@@ -645,7 +645,7 @@ namespace ppTrans {
                             {
                                 assert(q.vars.size() > 0);
                                 BType tdom = q.vars[0].type;
-                                for(int i=1;i<q.vars.size();i++)
+                                for(size_t i=1;i<q.vars.size();i++)
                                     tdom = BType::PROD(tdom,q.vars[i].type);
                                 Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda,q.vars,q.cond.copy(),q.body.copy(),
                                         BType::POW(BType::PROD(tdom,q.body.getType())));
@@ -657,7 +657,7 @@ namespace ppTrans {
                             {
                                 assert(q.vars.size() > 0);
                                 BType tdom = q.vars[0].type;
-                                for(int i=1;i<q.vars.size();i++)
+                                for(size_t i=1;i<q.vars.size();i++)
                                     tdom = BType::PROD(tdom,q.vars[i].type);
                                 Expr l = Expr::makeQuantifiedExpr(Expr::QuantifiedOp::Lambda,q.vars,q.cond.copy(),q.body.copy(),
                                         BType::POW(BType::PROD(tdom,q.body.getType())));
@@ -986,7 +986,7 @@ namespace ppTrans {
                     auto fds2 = splitRecord(eqs,rhs);
                     std::vector<Pred> conj;
                     assert(fds1.size() == fds2.size());
-                    for(int i=0;i<fds1.size();i++){
+                    for(size_t i=0;i<fds1.size();i++){
                         assert(fds1[i].first == fds2[i].first);
                         conj.push_back(
                                 Pred::makeExprComparison(
@@ -1481,7 +1481,7 @@ namespace ppTrans {
                     std::map<VarName,Expr> subst;
                     assert(rhs.vars.size() > 0);
                     Expr tmp = std::move(lhs_pair.first);
-                    for(int i = rhs.vars.size() -1; i>0; i--){
+                    for(size_t i = rhs.vars.size() -1; i>0; i--){
                         auto pair = splitPair(eqs,tmp);
                         subst[rhs.vars[i].name] = std::move(pair.second);
                         tmp = std::move(pair.first);
@@ -1939,7 +1939,7 @@ namespace ppTrans {
                     Expr tmp = lhs.copy();
                     LocalEquations eqs;
                     std::ostringstream str2;
-                    for(int i = q.vars.size() -1; i>0; i--){
+                    for(size_t i = q.vars.size() -1; i>0; i--){
                         auto pair = splitPair(eqs,tmp);
                         subst[q.vars[i].name] = std::move(pair.second);
                         tmp = std::move(pair.first);
@@ -1980,7 +1980,7 @@ namespace ppTrans {
                     auto lhs_fields = splitRecord(eqs,lhs);
                     std::vector<Pred> conj;
                     assert(lhs_fields.size() == s.fields.size());
-                    for(int i=0;i<s.fields.size();i++){
+                    for(size_t i=0;i<s.fields.size();i++){
                         assert(lhs_fields[i].first == s.fields[i].first);
                         conj.push_back(
                                 Pred::makeExprComparison(
@@ -2335,7 +2335,7 @@ namespace ppTrans {
             str << "(and ";
             ppTrans(str,env,eq,used_ids);
             str << " (distinct";
-            for(int i=0;i<set.elts.size();i++)
+            for(size_t i=0;i<set.elts.size();i++)
                 str << " " << env.registerId(set.elts[i].name,set.elts[i].type,used_ids);
             str << "))";
             return;

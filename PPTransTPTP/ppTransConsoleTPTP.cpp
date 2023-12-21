@@ -67,21 +67,6 @@ static void display_help()
     // TODO minint/maxint
 }
 
-static void classifyGoals(const vector<pair<int,int> >& goals, map<int, vector<int> >& sgoals) {
-    for(auto& goal: goals) {
-        if(sgoals.find(goal.first) == sgoals.end()) {
-            sgoals.insert(pair<int,vector<int> >(goal.first, vector<int>()));
-        }
-        sgoals.at(goal.first).push_back(goal.second);
-    }
-    for(auto& sgoal: sgoals) {
-        std::sort(sgoal.second.begin(),
-                  sgoal.second.end(),
-                  [](int i, int j) { return i < j; }
-        );
-    }
-}
-
 int main(int argc, char **argv)
 {
     std::string input;
