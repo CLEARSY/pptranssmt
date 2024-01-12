@@ -2334,10 +2334,15 @@ namespace ppTrans {
                     Expr::makeNaryExpr(Expr::NaryOp::Set,std::move(elts),set.setName.type));
             str << "(and ";
             ppTrans(str,env,eq,used_ids);
-            str << " (distinct";
-            for(size_t i=0;i<set.elts.size();i++)
-                str << " " << env.registerId(set.elts[i].name,set.elts[i].type,used_ids);
-            str << "))";
+            if (set.elts.size() > 1){
+                str << " (distinct";
+                for(int i=0;i<set.elts.size();i++)
+                    str << " " << env.registerId(set.elts[i].name,set.elts[i].type,used_ids);
+                str << ')';
+            } else {
+                str << " true";
+            }
+            str << ')';
             return;
         }
     }
