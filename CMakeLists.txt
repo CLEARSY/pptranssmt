@@ -5,8 +5,8 @@ project(pog-translators)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_PREFIX_PATH "/opt/homebrew/Cellar/qt@5/5.15.10_1" ${CMAKE_PREFIX_PATH})
-find_package(Qt5 COMPONENTS Core REQUIRED)
+
+find_package(Qt5 COMPONENTS Core Xml REQUIRED)
 
 
 # configure compilers
@@ -24,8 +24,23 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-add_subdirectory(BAST)
+if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+  set(PROJECT_IS_TOP_LEVEL TRUE)
+else()
+  set(PROJECT_IS_TOP_LEVEL FALSE)
+endif()
+
+if(PROJECT_IS_TOP_LEVEL)
+  foreach(submodule
+      "${PROJECT_SOURCE_DIR}/BAST")
+    if(NOT EXISTS "${submodule}/CMakeLists.txt")
+      message(FATAL_ERROR "Submodule ${submodule} is missing: update submodules and try again.")
+      message(FATAL_ERROR "Command : git submodule update --init --recursive.")
+    endif()
+  endforeach(submodule)
+  add_subdirectory(BAST)
+endif()
+
 add_subdirectory(POGLoader)
-# add_subdirectory(POGPrinter)
 add_subdirectory(PPTRANSSMT)
 add_subdirectory(PPTransTPTP)
