@@ -32,7 +32,7 @@ using std::vector;
 #include<QCoreApplication>
 #include<QDebug>
 
-#include "../POGLoader/pog.h"
+#include "pog.h"
 #include "ppTransTPTPNonIncr.h"
 
 static void display_help()
@@ -63,7 +63,7 @@ static void display_help()
          << "\t\t-h" << endl
          << "\t\t\tPrints help." << endl
          << "More information about TPTP format can be found at http://www.cs.miami.edu/~tptp/" << endl;
-         
+
     // TODO minint/maxint
 }
 

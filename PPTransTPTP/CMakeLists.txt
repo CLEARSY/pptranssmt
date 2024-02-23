@@ -1,4 +1,5 @@
 project(PPTRANSTPTP)
+set(CMAKE_CXX_STANDARD 17)
 
 set(PPTRANSTPTP_HEADERS
         utils.h
@@ -17,7 +18,7 @@ set(PPTRANSTPTP_SOURCES
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${BAST_SOURCE_DIR}
+        ${BASTLIB_SOURCE_DIR}
         ${POGLoader_SOURCE_DIR}
 )
 

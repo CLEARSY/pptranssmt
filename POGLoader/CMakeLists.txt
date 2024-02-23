@@ -1,4 +1,6 @@
 project(POGLoader)
+set(CMAKE_CXX_STANDARD 17)
+
 
 set(POG_HEADERS pog.h)
 
@@ -10,5 +12,6 @@ include_directories(
 )
 
 add_library(POGLoader_LIB STATIC ${POG_SOURCES} ${POG_HEADERS})
+include_directories(${BASTLIB_SOURCE_DIR})
 
 target_link_libraries(POGLoader_LIB PRIVATE BAST_LIB Qt5::Core Qt5::Xml)
