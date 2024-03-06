@@ -21,8 +21,8 @@
 #include "exprDesc.h"
 #include "predDesc.h"
 
-inline bool isProduct(const BType &ty){
-    return (ty.getKind() == BType::Kind::ProductType);
+inline bool isProduct(const BType &ty) {
+  return (ty.getKind() == BType::Kind::ProductType);
 }
 
 inline bool isStruct(const BType &ty){
@@ -303,7 +303,7 @@ void decomp::decompose(DContext &ctx, Pred &p){
             {
                 auto &q = p.toForall();
                 auto vars = ctx.push_vars(q.vars);
-                decompose(ctx,q.body);
+                decompose(ctx, q.body);
                 ctx.pop_vars();
                 return;
             }
