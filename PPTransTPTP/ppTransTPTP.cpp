@@ -233,14 +233,17 @@ namespace ppTransTPTP {
                 const TypedVar &y = vars_y[i];
                 const TypedVar &z = vars_z[i];
                 std::string ty = ppTrans(*this, x.type, used_ids);
-                x_dec += " " + localVarNameToString(x.name) + " : " + ty;
-                y_dec += " " + localVarNameToString(y.name) + " : " + ty;
-                z_dec += " " + localVarNameToString(z.name) + " : " + ty;
-                x_lst += " " + localVarNameToString(x.name);
-                y_lst += " " + localVarNameToString(y.name);
-                z_lst += " " + localVarNameToString(z.name);
+		const std::string xname = localVarNameToString(x.name);
+		const std::string yname = localVarNameToString(y.name);
+		const std::string zname = localVarNameToString(z.name);
+                x_dec += " " + xname + " : " + ty;
+                y_dec += " " + yname + " : " + ty;
+                z_dec += " " + zname + " : " + ty;
+                x_lst += " " + xname;
+                y_lst += " " + yname;
+                z_lst += " " + zname;
                 t_lst += " " + ty; // Type list for the iterate function
-                xy_eqs += " (" + localVarNameToString(x.name) + " = " + localVarNameToString(y.name) + ")";
+                xy_eqs += " (" + xname + " = " + yname + ")";
             }
 
             // Register the membership operator for the type of the iterate function
@@ -249,10 +252,10 @@ namespace ppTransTPTP {
             std::ostringstream axiom1;
             axiom1 << "tff(" + res + "_type, type," + res + ": (" + t_lst + " * " + t_lst + " * " + sty +
                       " * $int) > $o)." << endl;
-            axiom1 << "tff(" + res + "_axiom_1, axiom, ! [F : " + sty + ", X : " + t_lst + ", Y : " + t_lst + "] : "
+            axiom1 << "tff(" + res + "_axiom_1, axiom, ! [F : " + sty + ", " + x_dec + ", " + y_dec + "] : "
                    << endl;
-            axiom1 << "\t (" + res << "(X, Y, F,  0) => " + xy_eqs + " & ? [Z : " + t_lst + "] : (";
-            axiom1 << mem << "(Z, Y, F))))." << endl;
+            axiom1 << "\t (" + res << "(" + x_lst + "," + y_lst + ", F,  0) => (" + xy_eqs + " & ? [Z : " + t_lst + "] : (";
+            axiom1 << mem << "(Z, " << y_lst << ", F)))))." << endl;
 
             std::ostringstream axiom2;
             axiom2 << "tff(" + res + "_axiom_2, axiom, ! [F : " + sty + ", X : " << t_lst << "] : " << std::endl;
@@ -1114,11 +1117,10 @@ namespace ppTransTPTP {
                 LocalEquations eqs;
                 std::ostringstream str2;
                 std::pair<Expr, Expr> pair = splitPair(eqs, lhs);
-                str2 << "(";
                 ppTrans_mem(str2, ctx, pair.first, set.lhs, used_ids);
                 str2 << " & "; // Updated
                 ppTrans_mem(str2, ctx, pair.second, set.rhs, used_ids);
-                str2 << ")";
+                wrapStringInParenthesis(str2);
                 return add_local_defs(str, ctx, eqs, str2, used_ids);
             }
             case Expr::BinaryOp::Partial_Functions: {
@@ -1134,7 +1136,7 @@ namespace ppTransTPTP {
             }
             case Expr::BinaryOp::Partial_Surjections: {
                 BType ty_lhs = lhs.getType();
-                str << "( ";
+                str << "(";
                 ppTrans_mem(str, ctx, lhs,
                             Expr::makeBinaryExpr(Expr::BinaryOp::Partial_Functions, set.lhs.copy(), set.rhs.copy(),
                                                  BType::POW(ty_lhs)), used_ids);
@@ -1146,9 +1148,12 @@ namespace ppTransTPTP {
             case Expr::BinaryOp::Partial_Injections: {
                 BType ty_lhs = lhs.getType();
                 str << "(";
-                ppTrans_mem(str, ctx, lhs,
-                            Expr::makeBinaryExpr(Expr::BinaryOp::Partial_Functions, set.lhs.copy(), set.rhs.copy(),
-                                                 BType::POW(ty_lhs)), used_ids);
+                ppTrans_mem(
+                    str, ctx, lhs,
+                    Expr::makeBinaryExpr(Expr::BinaryOp::Partial_Functions,
+                                         set.lhs.copy(), set.rhs.copy(),
+                                         BType::POW(ty_lhs)),
+                    used_ids);
                 str << " & ";
                 ppTrans(str, ctx, isInj(lhs), used_ids);
                 str << ")";
@@ -1168,9 +1173,12 @@ namespace ppTransTPTP {
             case Expr::BinaryOp::Partial_Bijections: {
                 BType ty_lhs = lhs.getType();
                 str << "(";
-                ppTrans_mem(str, ctx, lhs,
-                            Expr::makeBinaryExpr(Expr::BinaryOp::Partial_Surjections, set.lhs.copy(), set.rhs.copy(),
-                                                 BType::POW(ty_lhs)), used_ids);
+                ppTrans_mem(
+                    str, ctx, lhs,
+                    Expr::makeBinaryExpr(Expr::BinaryOp::Partial_Surjections,
+                                         set.lhs.copy(), set.rhs.copy(),
+                                         BType::POW(ty_lhs)),
+                    used_ids);
                 str << " & ";
                 ppTrans(str, ctx, isInj(lhs), used_ids);
                 str << ")";
@@ -1190,9 +1198,9 @@ namespace ppTransTPTP {
             case Expr::BinaryOp::Set_Difference: {
                 str << "(";
                 ppTrans_mem(str, ctx, lhs, set.lhs, used_ids);
-                str << " & (~(";
+                str << " & (~";
                 ppTrans_mem(str, ctx, lhs, set.rhs, used_ids);
-                str << ")))";
+                str << "))";
                 return;
             }
             case Expr::BinaryOp::Total_Functions: {
@@ -1227,11 +1235,15 @@ namespace ppTransTPTP {
             }
             case Expr::BinaryOp::Total_Surjections: {
                 BType ty_lhs = lhs.getType();
+                str << "(";
                 ppTrans_mem(str, ctx, lhs,
-                            Expr::makeBinaryExpr(Expr::BinaryOp::Total_Functions, set.lhs.copy(), set.rhs.copy(),
-                                                 BType::POW(ty_lhs)), used_ids);
+                            Expr::makeBinaryExpr(
+                                Expr::BinaryOp::Total_Functions, set.lhs.copy(),
+                                set.rhs.copy(), BType::POW(ty_lhs)),
+                            used_ids);
                 str << " & ";
                 ppTrans(str, ctx, isSurj(lhs, set.rhs), used_ids);
+                str << ")";
                 return;
             }
             case Expr::BinaryOp::Head_Insertion: {
@@ -1245,7 +1257,7 @@ namespace ppTransTPTP {
             case Expr::BinaryOp::Interval: {
                 LocalEquations eqs;
                 std::ostringstream str2;
-                str2 << "$greatereq(";
+                str2 << "($greatereq(";
                 ppTrans(str2, ctx, eqs, lhs, used_ids);
                 str2 << ", ";
                 ppTrans(str2, ctx, eqs, set.lhs, used_ids);
@@ -1253,14 +1265,16 @@ namespace ppTransTPTP {
                 ppTrans(str2, ctx, eqs, lhs, used_ids); // FIXME
                 str2 << ", ";
                 ppTrans(str2, ctx, eqs, set.rhs, used_ids);
-                str2 << ")";
+                str2 << "))";
                 return add_local_defs(str, ctx, eqs, str2, used_ids);
             }
             case Expr::BinaryOp::Intersection: {
-                ppTrans_mem(str, ctx, lhs, set.lhs, used_ids);
-                str << " & "; // FIXME
-                ppTrans_mem(str, ctx, lhs, set.rhs, used_ids);
-                return;
+              str << "(";
+              ppTrans_mem(str, ctx, lhs, set.lhs, used_ids);
+              str << " & "; // FIXME
+              ppTrans_mem(str, ctx, lhs, set.rhs, used_ids);
+              str << ")";
+              return;
             }
             case Expr::BinaryOp::Head_Restriction: {
                 Expr itbl = Expr::makeBinaryExpr(Expr::BinaryOp::Interval, Expr::makeInteger("1"), set.rhs.copy(),
@@ -1296,6 +1310,7 @@ namespace ppTransTPTP {
                 BType ty_lhs = lhs.getType();
                 assert(ty_lhs.getKind() == BType::Kind::ProductType);
                 auto &pr = ty_lhs.toProductType();
+                str << "(";
                 ppTrans_mem(str, ctx, lhs, set.rhs, used_ids);
                 str << " | ";
                 ppTrans_mem(str, ctx, lhs, // FIXME
@@ -1304,6 +1319,7 @@ namespace ppTransTPTP {
                                     Expr::makeUnaryExpr(Expr::UnaryOp::Domain, set.rhs.copy(), BType::POW(pr.lhs)),
                                     set.lhs.copy(),
                                     set.lhs.getType()), used_ids);
+                str << ")";
                 return;
             }
             case Expr::BinaryOp::Relations: {
@@ -1359,6 +1375,7 @@ namespace ppTransTPTP {
                 ppTrans_mem(str2, ctx, mp1, set.lhs, used_ids);
                 str2 << " & ";
                 ppTrans_mem(str2, ctx, mp2, set.rhs, used_ids);
+                wrapStringInParenthesis(str2);
                 return add_local_defs(str, ctx, eqs, str2, used_ids);
             }
             case Expr::BinaryOp::Parallel_Product: {
@@ -1378,14 +1395,16 @@ namespace ppTransTPTP {
                 ppTrans_mem(str2, ctx, mp1, set.lhs, used_ids);
                 str2 << " & ";
                 ppTrans_mem(str2, ctx, mp2, set.rhs, used_ids);
+                wrapStringInParenthesis(str2);
                 return add_local_defs(str, ctx, eqs, str2, used_ids);
             }
             case Expr::BinaryOp::Union: {
                 // E.g. x : a\/b --> x : a | x : b
+                str << "((";
                 ppTrans_mem(str, ctx, lhs, set.lhs, used_ids);
-                str << " | ";
+                str << ") | (";
                 ppTrans_mem(str, ctx, lhs, set.rhs, used_ids);
-                str << ""; // FIXME Look into this
+                str << "))";
                 return;
             }
             case Expr::BinaryOp::Tail_Restriction: // x : a\|/b avec x=(x1,x2) --> x1+b |-> x2 : a
@@ -2294,6 +2313,7 @@ namespace ppTransTPTP {
 
     // Convert a predicate into an TPTP string
     void ppTrans(std::ostringstream &str, Context &ctx, const Pred &p, std::set<std::string> &used_ids) {
+
         switch (p.getTag()) {
             case Pred::PKind::True:
                 str << "$true";
@@ -2313,11 +2333,11 @@ namespace ppTransTPTP {
             case Pred::PKind::Equivalence: {
                 // Equivalence is not supported by TPTP, so we have to use bi-implication
                 auto &b = p.toEquivalence();
-                str << "(";
+                str << "((";
                 ppTrans(str, ctx, b.lhs, used_ids);
                 str << ") <=> (";
                 ppTrans(str, ctx, b.rhs, used_ids);
-                str << ")";
+                str << "))";
                 return;
             }
             case Pred::PKind::ExprComparison:
@@ -2335,15 +2355,17 @@ namespace ppTransTPTP {
                 } else if (n.operands.size() == 1) {
                     return ppTrans(str, ctx, n.operands.at(0), used_ids);
                 } else {
-                    str << "(";
+		  std::ostringstream oss;
+                    oss << "(";
                     for (size_t i = 0; i < n.operands.size(); i++) {
                         auto &q = n.operands.at(i);
-                        ppTrans(str, ctx, q, used_ids);
+                        ppTrans(oss, ctx, q, used_ids);
                         if (i < n.operands.size() - 1) {
-                            str << " & ";
+                            oss << " & ";
                         }
                     }
-                    str << ")";
+                    oss << ")";
+		    str << oss.str();
                     return;
                 }
             }
@@ -2369,7 +2391,7 @@ namespace ppTransTPTP {
             }
             case Pred::PKind::Forall: {
                 auto &q = p.toForall();
-                str << "! [";
+                str << "(! [";
                 for (size_t i = 0; i < q.vars.size(); i++) {
                     // Bounded variables
                     const auto &v = q.vars.at(i);
@@ -2382,26 +2404,28 @@ namespace ppTransTPTP {
                 // Add variables to context
                 ctx.push_vars(q.vars);
                 ppTrans(str, ctx, q.body, used_ids);
-                str << ")";
+                str << "))";
                 //Clear context
                 ctx.pop_vars();
                 return;
             }
             case Pred::PKind::Exists: {
+	      std::ostringstream oss;
                 auto &q = p.toExists();
-                str << "? [";
+                oss << "(? [";
                 for (size_t i = 0; i < q.vars.size(); ++i) {
                     const auto &v = q.vars.at(i);
-                    str << localVarNameToString(v.name) << " : " << ppTrans(ctx, v.type, used_ids);
+                    oss << localVarNameToString(v.name) << " : " << ppTrans(ctx, v.type, used_ids);
                     if (i < q.vars.size() - 1) {
-                        str << ", ";
+                        oss << ", ";
                     }
                 }
-                str << "] : (";
+                oss << "] : (";
                 ctx.push_vars(q.vars);
-                ppTrans(str, ctx, q.body, used_ids);
-                str << ")";
+                ppTrans(oss, ctx, q.body, used_ids);
+                oss << "))";
                 ctx.pop_vars();
+		str << oss.str();
                 return;
             }
         }
@@ -2461,6 +2485,7 @@ namespace ppTransTPTP {
                     Pred::ComparisonOp::Equality,
                     Expr::makeIdent(set.setName.name, set.setName.type),
                     Expr::makeNaryExpr(Expr::NaryOp::Set, std::move(elts), set.setName.type));
+            str << "(";
             ppTrans(str, env, eq, used_ids);
             str << " & ((";
             for (size_t i = 0; i < set.elts.size() - 1; i++) {
@@ -2471,7 +2496,7 @@ namespace ppTransTPTP {
                 if (i < set.elts.size() - 2)
                     str << " & ";
             }
-            str << "))";
+            str << ")))";
             return;
         }
     }
