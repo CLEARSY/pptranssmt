@@ -18,9 +18,9 @@
 */
 #include "ppTransTPTP.h"
 #include "decomposition.h"
-#include "../BAST/src/predDesc.h"
-#include "../BAST/src/exprDesc.h"
-#include "../BAST/src/exprWriter.h"
+#include "predDesc.h"
+#include "exprDesc.h"
+#include "exprWriter.h"
 #include <fstream>
 #include <iostream>
 #include <ostream>
@@ -183,7 +183,7 @@ namespace ppTransTPTP {
                 this->registerSetType(ty.toPowerType().content, used_ids);
                 setType = setTypes.find(ty.toPowerType().content);
             }
-            
+
             std::ostringstream str;
             str << "tff(" << res << "_type, type, " << res << " : (";
             toTypeList(str,*this,ty.toPowerType().content,used_ids);
@@ -266,7 +266,7 @@ namespace ppTransTPTP {
             axiom3 << "\t\t\t ? [Z : " << t_lst << "] : (" << res << "(X, Y, F, $difference(N, 1)) & " << mem << "(Z, Y, F)))))." << std::endl;
 
             std::ostringstream axiom4;
-            axiom4 << "tff(" + res + "_axiom_4, axiom, ! [F : " + sty + ", N : $int, " 
+            axiom4 << "tff(" + res + "_axiom_4, axiom, ! [F : " + sty + ", N : $int, "
                   << "X : " << t_lst << ", Y :" << t_lst << "] : (" << std::endl;
             axiom4 << "\t $greatereq(N, 1) => (" << endl;
             axiom4 << "\t\t ?[Z : " << t_lst << "] : ((" << res << "(X, Y, F, $difference(N, 1)) & " << mem << "(Z, Y, F))" << endl;
@@ -2038,7 +2038,7 @@ namespace ppTransTPTP {
                 LocalEquations eqs;
                 std::ostringstream str2;
                 str2 << "($greater(";
-                ppTrans(str2, ctx, eqs, lhs, used_ids); 
+                ppTrans(str2, ctx, eqs, lhs, used_ids);
                 str2 << ", 0) & $lesseq(";
                 ppTrans(str2, ctx, eqs, lhs, used_ids);
                 str2 << ", max_int))";

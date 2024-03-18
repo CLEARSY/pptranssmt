@@ -22,11 +22,12 @@
 #include <vector>
 #include <variant>
 using std::variant;
+
 #include <string>
 #include <QDomDocument>
 
-#include "../BAST/src/pred.h"
-#include "../BAST/src/gpred.h"
+#include "pred.h"
+#include "gpred.h"
 
 namespace pog {
 

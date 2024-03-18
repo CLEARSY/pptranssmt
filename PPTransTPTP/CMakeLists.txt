@@ -1,10 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_STANDARD 17)
-
 project(PPTRANSTPTP)
-
-find_package(Qt5Core)
-find_package(Qt5Xml)
+set(CMAKE_CXX_STANDARD 17)
 
 set(PPTRANSTPTP_HEADERS
         utils.h
@@ -13,7 +8,7 @@ set(PPTRANSTPTP_HEADERS
         ppTransTPTPNonIncr.h
         )
 
-set(PPTRANSTPTP_SRC
+set(PPTRANSTPTP_SOURCES
         utils.cpp
         decomposition.cpp
         ppTransTPTP.cpp
@@ -23,16 +18,14 @@ set(PPTRANSTPTP_SRC
 
 include_directories(
         ${CMAKE_CURRENT_BINARY_DIR}
-        ${BAST_SOURCE_DIR}
+        ${BASTLIB_SOURCE_DIR}
         ${POGLoader_SOURCE_DIR}
 )
 
-add_executable(ppTransTPTP
-        ${PPTRANSTPTP_SRC}
-        )
+add_executable(ppTransTPTP ${PPTRANSTPTP_SOURCES})
 
-target_link_libraries(ppTransTPTP POGLoader BAST Qt5::Core Qt5::Xml)
+target_link_libraries(ppTransTPTP
+        -Bstatic POGLoader_LIB BAST_LIB
+        -Bdynamic Qt5::Core Qt5::Xml)
 
-add_executable(TPTPfilter
-        TPTPfilter.cpp
-        )
+add_executable(TPTPfilter TPTPfilter.cpp)

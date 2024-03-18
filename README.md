@@ -17,8 +17,8 @@ or to TPTP format based on the pptrans approach.
 
 ## COMPILING
 
-The code uses Qt libraries. It is known to compile with Qt5.12 under
-Linux, but should be compatible with the latest 5.x LTS.
+The code uses Qt libraries. It is known to compile with Qt5.12.x and Qt5.15.x under
+Linux.
 
 Our build process is based on `cmake`, which produces suitable Makefiles from the `CMakeLists.txt` provided here. To build the code, run the following commands
 ```
@@ -31,6 +31,10 @@ To update the repository and its submodules, use the following command:
 ```bash
 git submodule update --init --recursive
 ```
+
+If this repository is embedded in a build process managed by CMake, then
+that process is responsible for processing the CMakeLists.txt file of the
+BAST library before that of this project.
 
 ## USAGE
 
@@ -51,7 +55,6 @@ Alternatively, you can use one of the following scripts in the `Scripts` folder:
 Both scripts will compile the code (using cmake and make) if needed.
 
 ## COPYING
-
 
 This software is copyright (C) CLEARSY 2023. All rights reserved.
 

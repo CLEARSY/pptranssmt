@@ -18,15 +18,15 @@
 */
 #include <map>
 #include "decomposition.h"
-#include "../BAST/src/exprDesc.h"
-#include "../BAST/src/predDesc.h"
+#include "exprDesc.h"
+#include "predDesc.h"
 
 inline bool isProduct(const BType &ty){
-    return (ty.getKind() == BType::Kind::ProductType); 
+    return (ty.getKind() == BType::Kind::ProductType);
 }
 
 inline bool isStruct(const BType &ty){
-    return (ty.getKind() == BType::Kind::Struct); 
+    return (ty.getKind() == BType::Kind::Struct);
 }
 
 namespace decomp {

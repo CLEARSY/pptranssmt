@@ -1,12 +1,1 @@
-*~
-*.a
-*.o
-CMakeCache.txt
-cmake_install.cmake
-CMakeFiles
-Makefile
-proof_obligation_files/*
-*.tptp
-PPTransTPTP/ppTransTPTP
-*.out
-*.smt2
+build/
