@@ -29,3 +29,4 @@ target_link_libraries(ppTransTPTP
         -Bdynamic Qt5::Core Qt5::Xml)
 
 add_executable(TPTPfilter TPTPfilter.cpp)
+target_link_libraries(TPTPfilter -static)
